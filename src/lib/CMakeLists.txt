@@ -1,6 +1,7 @@
 include_directories(../include)
 
 add_library(ray
-  bitmap.cc
-  scene.cc
+  bitmap.cpp
+  camera.cpp
+  scene.cpp
   )
