@@ -1,5 +1,6 @@
 #include "bitmap.hpp"
 #include "camera.hpp"
+#include "objects.hpp"
 #include "scene.hpp"
 
 #include <fstream>
@@ -7,6 +8,7 @@
 
 int main(int argc, char **argv) {
   ray::Scene s;
+  s.add_object(new ray::BoxObject());
   ray::Camera c(s, 1.0, 500, 500, 50, ray::Vector());
   ray::Bitmap bmp = c.snap();
   std::ofstream out("/tmp/out.bmp", std::ofstream::binary);
