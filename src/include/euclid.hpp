@@ -99,6 +99,10 @@ public:
     }
     return true;
   }
+
+  double horizontal_gradient() const {
+    return k() / std::sqrt(i() * i() + j() * j());
+  }
 };
 
 inline std::ostream &operator<<(std::ostream &out, const Vector &v) {

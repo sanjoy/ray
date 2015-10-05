@@ -11,8 +11,10 @@ Color Scene::render_pixel(const Ray &r) const {
   for (Object *o : _objects) {
     double k;
     Color c;
-    if (o->incident(*this, r, k, c) && k < smallest_k && k >= 0.0)
+    if (o->incident(*this, r, k, c) && k < smallest_k && k >= 0.0) {
+      smallest_k = k;
       pixel = c;
+    }
   }
 
   return pixel;

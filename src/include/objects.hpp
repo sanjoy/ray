@@ -16,6 +16,11 @@ public:
   virtual bool incident(const Scene &, const Ray &, double &, Color &) override;
 };
 
+class SkyObject : public Object {
+public:
+  virtual bool incident(const Scene &, const Ray &, double &, Color &) override;
+};
+
 }
 
 #endif

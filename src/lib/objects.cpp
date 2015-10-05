@@ -1,4 +1,6 @@
 #include "objects.hpp"
+
+#include <cmath>
 #include <iostream>
 
 using namespace ray;
@@ -25,4 +27,13 @@ bool BoxObject::incident(const Scene &scene, const Ray &incoming,
     return true;
   }
   return false;
+}
+
+bool SkyObject::incident(const Scene &scene, const Ray &incoming,
+                         double &out_k, Color &out_c) {
+  double grad = incoming.direction().horizontal_gradient();
+  double angle_ratio = std::fabs(std::atan(grad) / (M_PI / 2));
+  out_k = std::numeric_limits<double>::max();
+  out_c = Color(uint8_t(255 * angle_ratio), uint8_t(255 * angle_ratio), 255);
+  return true;
 }
