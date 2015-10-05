@@ -6,14 +6,15 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 using namespace ray;
 
 int main(int argc, char **argv) {
   {
     ray::Scene s;
-    s.add_object(new ray::BoxObject());
-    s.add_object(new ray::SkyObject());
+    s.add_object(std::unique_ptr<BoxObject>(new ray::BoxObject()));
+    s.add_object(std::unique_ptr<SkyObject>(new ray::SkyObject()));
     ray::Camera c(s, 1.0, 500, 500, 50, ray::Vector());
     ray::Bitmap bmp = c.snap();
     std::ofstream out("/tmp/out.bmp", std::ofstream::binary);
