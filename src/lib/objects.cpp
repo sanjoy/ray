@@ -7,7 +7,7 @@ BoxObject::BoxObject() {
   Plane p(Vector::get_i(), Vector::get_i() * 500);
   std::vector<Vector> points;
 
-  Vector base = Vector::get_i() * 500 + -100 * Vector::get_k();
+  Vector base = Vector::get_i() * 500 + -300 * Vector::get_k();
   Vector side_a = (Vector::get_k() - Vector::get_j()) * 500;
   Vector side_b = (Vector::get_k() + Vector::get_j()) * 500;
   points.push_back(base + side_a);

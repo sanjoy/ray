@@ -202,7 +202,12 @@ public:
 
     unsigned intersect_count = 0;
 
-    Ray outgoing_ray = Ray::from_two_points(r.at(out), container().point());
+    Vector intersection_point = r.at(out);
+    if (intersection_point == container().point())
+      return true;
+
+    Ray outgoing_ray =
+      Ray::from_two_points(intersection_point, container().point());
 
     for (unsigned i = 0, e = points().size(); i != e; ++i) {
       const Vector &p_from = points()[i];
@@ -212,7 +217,7 @@ public:
       Ray r = Ray::from_two_points(p_from, p_to);
 
       if (r.intersect(outgoing_ray, k_boundary, k_ray) &&
-          k_boundary >= 0.0 && k_boundary <= 1.0 && k_ray >= 0.0)
+          k_boundary >= 0.0 && k_boundary < 1.0 && k_ray >= 0.0)
         intersect_count++;
     }
 
