@@ -21,6 +21,7 @@ BoxObject::BoxObject() {
 }
 
 bool BoxObject::incident(const Scene &scene, const Ray &incoming,
+                         double current_best_k,
                          double &out_k, Color &out_c) {
   if (_plane.intersect(incoming, out_k)) {
     out_c = Color::create_red();
@@ -30,7 +31,11 @@ bool BoxObject::incident(const Scene &scene, const Ray &incoming,
 }
 
 bool SkyObject::incident(const Scene &scene, const Ray &incoming,
+                         double current_best_k,
                          double &out_k, Color &out_c) {
+  if (current_best_k < std::numeric_limits<double>::max())
+    return false;
+
   double grad = incoming.direction().horizontal_gradient();
   double angle_ratio = std::fabs(std::atan(grad) / (M_PI / 2));
   out_k = std::numeric_limits<double>::max();
