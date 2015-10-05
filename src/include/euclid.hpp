@@ -4,6 +4,8 @@
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include <iostream>
+#include <utility>
 
 namespace ray {
 
@@ -37,6 +39,19 @@ public:
   double j() const { return _j; }
   double k() const { return _k; }
 
+  bool is_zero() const {
+    return Ruler::is_zero(i()) && Ruler::is_zero(j()) && Ruler::is_zero(k());
+  }
+
+  bool operator==(const Vector &o) const {
+    return Ruler::is_equal(i(), o.i()) && Ruler::is_equal(j(), o.j()) &&
+      Ruler::is_equal(k(), o.k());
+  }
+
+  void print(std::ostream &out) const {
+    out << "[ " << i() << " " << j() << " " << k() << " ]";
+  }
+
   Vector operator+(const Vector &other) const {
     return Vector(i() + other.i(), j() + other.j(), k() + other.k());
   }
@@ -57,24 +72,39 @@ public:
     return Vector(v * i(), v * j(), v * k());
   }
 
-  double mag() const {
-    return std::sqrt((*this) * (*this));
-  }
-
   Vector cross_product(const Vector &v) const {
     return Vector(j() * v.k() - k() * v.j(),
-                  i() * v.k() - k() * v.i(),
+                  k() * v.i() - i() * v.k(),
                   i() * v.j() - j() * v.i());
   }
 
   bool get_scale(const Vector &v, double &result) const {
-    if (Ruler::is_zero(v.i()))
-      return false;
+    bool found = false;
+    for (auto &p : { std::make_pair(i(), v.i()), std::make_pair(j(), v.j()),
+          std::make_pair(k(), v.k()) }) {
+      if (found) {
+        if (!Ruler::is_equal(p.second * result, p.first))
+          return false;
+        continue;
+      }
 
-    double c = i() / v.i();
-    return Ruler::is_equal(v.j() * c, j()) && Ruler::is_equal(v.k() * c, k());
+      if (Ruler::is_zero(p.second)) {
+        if (!Ruler::is_zero(p.first))
+          return false;
+        continue;
+      }
+
+      found = true;
+      result = p.first / p.second;
+    }
+    return true;
   }
 };
+
+inline std::ostream &operator<<(std::ostream &out, const Vector &v) {
+  v.print(out);
+  return out;
+}
 
 inline Vector operator*(double d, const Vector &v) { return v * d; }
 
@@ -85,11 +115,15 @@ class Ray {
   Vector _direction;
   Vector _offset;
 
-public:
-  explicit Ray(Vector d, Vector o) : _direction(d), _offset(o) {}
+  explicit Ray(Vector o, Vector d) : _direction(d), _offset(o) {}
 
+public:
   static Ray from_two_points(Vector from, Vector to) {
     return Ray(from, to - from);
+  }
+
+  void print(std::ostream &out) const {
+    out << "O: " << offset() << " D: " << direction();
   }
 
   const Vector &direction() const { return _direction; }
@@ -113,6 +147,10 @@ public:
   }
 };
 
+inline std::ostream &operator<<(std::ostream &out, const Ray &r) {
+  r.print(out);
+  return out;
+}
 
 // Infinite plane in 3D space: all p such that (p - point()) * normal() == 0.
 class Plane {
@@ -133,7 +171,8 @@ public:
 
     if (Ruler::is_zero(denom)) return false;
 
-    return ((point() - r.offset()) * normal()) / denom;
+    out = ((point() - r.offset()) * normal()) / denom;
+    return true;
   }
 
   bool contains(const Vector &p) const {
@@ -167,10 +206,10 @@ public:
 
     for (unsigned i = 0, e = points().size(); i != e; ++i) {
       const Vector &p_from = points()[i];
-      const Vector &p_to = points()[i == (e - 1) ? 0 : i];
+      const Vector &p_to = points()[i == (e - 1) ? 0 : (i + 1)];
 
       double k_boundary, k_ray;
-      Ray r(p_from, p_to);
+      Ray r = Ray::from_two_points(p_from, p_to);
 
       if (r.intersect(outgoing_ray, k_boundary, k_ray) &&
           k_boundary >= 0.0 && k_boundary <= 1.0 && k_ray >= 0.0)

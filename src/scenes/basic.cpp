@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 
+using namespace ray;
+
 int main(int argc, char **argv) {
   ray::Scene s;
   s.add_object(new ray::BoxObject());

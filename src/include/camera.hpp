@@ -9,6 +9,8 @@ namespace ray {
 class Camera {
   const Scene &_scene;
 
+  const double _focal_length;
+
   const unsigned _screen_width_px;
   const unsigned _screen_height_px;
 
@@ -16,7 +18,6 @@ class Camera {
   const unsigned _screen_resolution;
 
   const Vector &_focus_position;
-  const double _focal_length;
 
 public:
   explicit Camera(const Scene &s, double focal_length,

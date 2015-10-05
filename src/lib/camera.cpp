@@ -12,13 +12,13 @@ Camera::Camera(const Scene &s, double focal_length,
 Bitmap Camera::snap() {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
 
-  for (unsigned xi = -(_screen_width_px / 2), xe = (_screen_width_px / 2);
+  for (int xi = -(_screen_width_px / 2), xe = (_screen_width_px / 2);
        xi != xe; ++xi)
-    for (unsigned yi = -(_screen_height_px / 2), ye = (_screen_height_px / 2);
+    for (int yi = -(_screen_height_px / 2), ye = (_screen_height_px / 2);
          yi != ye; ++yi) {
-      const Vector gradiant_vect(_focal_length, (xi * 1.0) / _screen_resolution,
-                                 (yi * 1.0) / _screen_resolution);
-      Ray r(_focus_position, gradiant_vect);
+      const Vector sample_pt(_focal_length, (xi * 1.0) / _screen_resolution,
+                             (yi * 1.0) / _screen_resolution);
+      Ray r = Ray::from_two_points(_focus_position, sample_pt);
       Color c = _scene.render_pixel(r);
       bmp.at(xi + _screen_width_px / 2, yi + _screen_height_px / 2) = c;
     }
