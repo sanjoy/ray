@@ -103,6 +103,19 @@ public:
   double horizontal_gradient() const {
     return k() / std::sqrt(i() * i() + j() * j());
   }
+
+  double mag() const {
+    return std::sqrt(i() * i() + j() * j() + k() * k());
+  }
+
+  double dist(const Vector &other) const {
+    return (*this - other).mag();
+  }
+
+  Vector normalize() const {
+    assert(!Ruler::is_zero(mag()) && "Cannot normalize a zero vector!");
+    return (*this) * (1.0 / mag());
+  }
 };
 
 inline std::ostream &operator<<(std::ostream &out, const Vector &v) {
@@ -148,6 +161,11 @@ public:
 
     numerator = offset() + k_self * direction() - r.offset();
     return numerator.get_scale(r.direction(), k_other);
+  }
+
+  bool contains(const Vector &v, double &out_k) const {
+    if (direction().is_zero()) return false;
+    return (v - offset()).get_scale(direction(), out_k);
   }
 };
 

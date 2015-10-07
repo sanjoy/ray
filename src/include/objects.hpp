@@ -9,12 +9,16 @@
 namespace ray {
 
 class BoxObject : public Object {
-  ConvexPlaneSegment _plane;
-
 public:
-  BoxObject();
+  static constexpr unsigned FACE_COUNT = 6;
+  BoxObject(const Vector &center, const Vector &normal_a,
+            const Vector &normal_b, double side);
   virtual bool incident(const Scene &, const Ray &, double,
                         double &, Color &) override;
+
+private:
+  ConvexPlaneSegment _faces[FACE_COUNT];
+  Color _colors[FACE_COUNT];
 };
 
 class SkyObject : public Object {

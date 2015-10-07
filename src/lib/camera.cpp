@@ -18,7 +18,8 @@ Bitmap Camera::snap() {
          yi != ye; ++yi) {
       const Vector sample_pt(_focal_length, (xi * 1.0) / _screen_resolution,
                              (yi * 1.0) / _screen_resolution);
-      Ray r = Ray::from_two_points(_focus_position, sample_pt);
+      Ray r =
+        Ray::from_two_points(_focus_position, _focus_position + sample_pt);
       Color c = _scene.render_pixel(r);
       bmp.at(xi + _screen_width_px / 2, yi + _screen_height_px / 2) = c;
     }
