@@ -17,7 +17,7 @@ public:
                         double &, Color &) override;
 
 private:
-  ConvexPlaneSegment _faces[FACE_COUNT];
+  RectanglePlaneSegment _faces[FACE_COUNT];
   Color _colors[FACE_COUNT];
 };
 

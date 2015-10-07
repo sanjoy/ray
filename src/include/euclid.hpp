@@ -1,6 +1,7 @@
 #ifndef RAY_EUCLID_HPP
 #define RAY_EUCLID_HPP
 
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <vector>
@@ -212,6 +213,7 @@ public:
 };
 
 // Finite convex segment of a plane
+// Note: this current implemention of this is buggy.
 class ConvexPlaneSegment {
   Plane _container;
   std::vector<Vector> _points;
@@ -255,6 +257,55 @@ public:
     }
 
     return intersect_count % 2 == 1;
+  }
+};
+
+// Finite convex segment of a plane
+class RectanglePlaneSegment {
+  Plane _container;
+  std::array<Vector, 4> _pts;
+  Vector _orth_0, _orth_1;
+  double _orth_0_begin, _orth_0_end;
+  double _orth_1_begin, _orth_1_end;
+
+public:
+  RectanglePlaneSegment() {}
+  explicit RectanglePlaneSegment(
+    const Plane &ctr, const std::array<Vector, 4> &pts)
+    : _container(ctr), _pts(pts) {
+#ifndef NDEBUG
+    for (const Vector &v : points())
+      assert(container().contains(v));
+#endif
+
+    _orth_0 = (points()[0] - points()[1]).normalize();
+    _orth_1 = (points()[2] - points()[1]).normalize();
+
+    _orth_0_begin = points()[1] * _orth_0;
+    _orth_0_end   = points()[0] * _orth_0;
+
+    _orth_1_begin = points()[1] * _orth_1;
+    _orth_1_end   = points()[2] * _orth_1;
+
+    assert(Ruler::is_zero(_orth_0 * _orth_1));
+  }
+
+  const Plane &container() const { return _container; }
+  const std::array<Vector, 4> &points() const { return _pts; }
+
+  bool intersect(const Ray &r, double &out) const {
+    if (!container().intersect(r, out))
+      return false;
+
+    Vector isection = r.at(out);
+
+    double orth_0_component = isection * _orth_0;
+    if (orth_0_component > _orth_0_end || orth_0_component < _orth_0_begin)
+      return false;
+
+    double orth_1_component = isection * _orth_1;
+    return (orth_1_component <= _orth_1_end &&
+            orth_1_component >= _orth_1_begin);
   }
 };
 

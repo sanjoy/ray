@@ -24,17 +24,17 @@ BoxObject::BoxObject(const Vector &center, const Vector &normal_a,
       Vector pt_in_plane = center + sign * ns[i] * side;
       Plane p(ns[i], pt_in_plane);
 
-      std::vector<Vector> pts;
-      pts.push_back(pt_in_plane + axis_0 + axis_1);
-      pts.push_back(pt_in_plane + axis_0 - axis_1);
-      pts.push_back(pt_in_plane - axis_0 - axis_1);
-      pts.push_back(pt_in_plane - axis_0 + axis_1);
+      std::array<Vector, 4> pts;
+      pts[0] = pt_in_plane + axis_0 + axis_1;
+      pts[1] = pt_in_plane + axis_0 - axis_1;
+      pts[2] = pt_in_plane - axis_0 - axis_1;
+      pts[3] = pt_in_plane - axis_0 + axis_1;
 
-      ConvexPlaneSegment cps(p, std::move(pts));
+      RectanglePlaneSegment rps(p, pts);
       if (sign == -1)
-        _faces[2 * i] = std::move(cps);
+        _faces[2 * i] = rps;
       else
-        _faces[2 * i + 1] = std::move(cps);
+        _faces[2 * i + 1] = rps;
     }
   }
 
@@ -54,10 +54,9 @@ bool BoxObject::incident(const Scene &scene, const Ray &incoming,
 
   unsigned idx = 0;
   unsigned found_idx = -1;
-  for (ConvexPlaneSegment &cps : _faces) {
-    // if (idx != 3 && idx != 2) { idx++; continue; }
+  for (RectanglePlaneSegment &rps : _faces) {
     double k;
-    if (cps.intersect(incoming, k) && k < smallest_k) {
+    if (rps.intersect(incoming, k) && k < smallest_k) {
       smallest_k = k;
       found_idx = idx;
     }
