@@ -67,7 +67,7 @@ void Bitmap::write(std::ostream &out) {
 
   // pixel data
   for (unsigned i = pixel_count(), e = 0; i != e; --i) {
-    Color &c = _image[i];
+    Color &c = _image[i - 1];
     uint8_t pixel_data[3] = {c.blue(), c.green(), c.red()};
     out.write((char *)pixel_data, 3);
   }
