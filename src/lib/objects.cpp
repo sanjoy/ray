@@ -82,3 +82,15 @@ bool SkyObject::incident(const Scene &scene, const Ray &incoming,
   out_c = Color(uint8_t(255 * angle_ratio), uint8_t(255 * angle_ratio), 255);
   return true;
 }
+
+
+bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
+                               double current_best_k,
+                               double &out_k, Color &out_c) {
+  if (_sphere.intersect(incoming, out_k)) {
+    out_c = Color::create_red();
+    return true;
+  }
+
+  return false;
+}

@@ -17,6 +17,11 @@ struct Ruler {
   }
 
   template<unsigned op_count = 1>
+  static bool is_negative(double d) {
+    return d < (op_count * std::numeric_limits<double>::round_error());
+  }
+
+  template<unsigned op_count = 1>
   static bool is_equal(double d0, double d1) {
     return is_zero<op_count>(d0 - d1);
   }
@@ -306,6 +311,52 @@ public:
     double orth_1_component = isection * _orth_1;
     return (orth_1_component <= _orth_1_end &&
             orth_1_component >= _orth_1_begin);
+  }
+};
+
+class Sphere {
+  Vector _center;
+  double _radius;
+  Vector _center_normal;
+  double _rhs;
+
+public:
+  Sphere() {}
+
+  Sphere(const Vector &center, double radius) :
+    _center(center), _radius(radius), _center_normal(_center.normalize()) {
+    _rhs = center * center - radius * radius;
+  }
+
+  const Vector &center() const { return _center; }
+  double radius() const { return _radius; }
+
+  bool intersect(const Ray &r, double &out) {
+    // k^2 * a + k * b + c = 0
+
+    double a = r.direction() * r.direction();
+    double b =
+      2 * (r.direction() * r.offset()) - 2 * (r.direction() * center());
+    double c =
+      r.offset() * r.offset() - 2 * r.offset() * center() + _rhs;
+
+    if (Ruler::is_zero(a)) {
+      if (Ruler::is_zero(b))
+        return false;
+      out = - (c / b);
+      return true;
+    }
+
+    double disc_sqr = b * b - 4 * a * c;
+    if (Ruler::is_negative(disc_sqr))
+      return false;
+
+    double disc = std::sqrt(disc_sqr);
+    double k1 = (-b + disc) / (2 * a);
+    double k2 = (-b - disc) / (2 * a);
+
+    out = k1 < k2 ? k1 : k2;
+    return true;
   }
 };
 

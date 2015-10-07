@@ -21,6 +21,15 @@ private:
   Color _colors[FACE_COUNT];
 };
 
+class SphericalMirror : public Object {
+  Sphere _sphere;
+public:
+  SphericalMirror(const Vector &center, double radius) :
+    _sphere(center, radius) {}
+  virtual bool incident(const Scene &, const Ray &, double,
+                        double &, Color &) override;
+};
+
 class SkyObject : public Object {
 public:
   virtual bool incident(const Scene &, const Ray &, double,
