@@ -13,20 +13,30 @@ using namespace ray;
 int main(int argc, char **argv) {
   {
     ray::Scene s;
-    s.add_object(
-      std::unique_ptr<BoxObject>(
-        new ray::BoxObject(
-          Vector::get_i() * 3500,
-          Vector::get_i() +
-          (1.0 / std::sqrt(2)) * (Vector::get_k() + Vector::get_j()),
-          Vector::get_i() -
-          (1.0 / std::sqrt(2)) * (Vector::get_k() + Vector::get_j()),
-          800.0)));
 
-    s.add_object(
-      std::unique_ptr<SkyObject>(new ray::SkyObject()));
+    Vector init_normal_a = Vector::get_i() +
+      (1.0 / std::sqrt(2)) * (Vector::get_k() + Vector::get_j());
 
-    ray::Camera c(s, 2.0, 1000, 1000, 50, ray::Vector());
+    Vector init_normal_b = Vector::get_i() -
+      (1.0 / std::sqrt(2)) * (Vector::get_k() + Vector::get_j());
+
+    init_normal_a.rotate(0.1, init_normal_b);
+    init_normal_b.rotate(0.1, init_normal_a);
+
+    for (int i = 0; i < 4; i++) {
+      Vector position =
+        Vector::get_i() * 3500 + Vector::get_j() * 1500 * (i - 2) +
+        Vector::get_k() * 2000 * (i % 2);
+      std::unique_ptr<BoxObject> box(
+        new ray::BoxObject(position, init_normal_a, init_normal_b, 200.0));
+      s.add_object(std::move(box));
+      init_normal_a.rotate(0.1, init_normal_b);
+      init_normal_b.rotate(0.1, init_normal_a);
+    }
+
+    s.add_object(std::unique_ptr<SkyObject>(new ray::SkyObject()));
+
+    ray::Camera c(s, 6.0, 2000, 2000, 150, ray::Vector());
     ray::Bitmap bmp = c.snap();
     std::ofstream out("/tmp/out.bmp", std::ofstream::binary);
     bmp.write(out);
