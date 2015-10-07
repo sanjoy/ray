@@ -116,6 +116,15 @@ public:
     assert(!Ruler::is_zero(mag()) && "Cannot normalize a zero vector!");
     return (*this) * (1.0 / mag());
   }
+
+  Vector rotate(double radian, const Vector &orth) {
+    assert(Ruler::is_zero(*this * orth) && "precondition!");
+
+    Vector orthonormal = orth.normalize();
+    Vector normal_in_rotation_plane = this->cross_product(orthonormal);
+    return ((*this) * std::cos(radian) +
+            normal_in_rotation_plane * std::sin(radian));
+  }
 };
 
 inline std::ostream &operator<<(std::ostream &out, const Vector &v) {
@@ -211,8 +220,10 @@ public:
   ConvexPlaneSegment() {}
   explicit ConvexPlaneSegment(const Plane &ctr, const std::vector<Vector> &&pts)
     : _container(ctr), _points(pts) {
+#ifndef NDEBUG
     for (const Vector &v : points())
       assert(container().contains(v));
+#endif
   }
 
   const Plane &container() const { return _container; }
