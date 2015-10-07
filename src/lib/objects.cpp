@@ -1,5 +1,7 @@
 #include "objects.hpp"
 
+#include "scene.hpp"
+
 #include <cmath>
 #include <iostream>
 
@@ -76,10 +78,15 @@ bool SkyObject::incident(const Scene &scene, const Ray &incoming,
   if (current_best_k < std::numeric_limits<double>::max())
     return false;
 
-  double grad = incoming.direction().horizontal_gradient();
-  double angle_ratio = std::fabs(std::atan(grad) / (M_PI / 2));
-  out_k = std::numeric_limits<double>::max();
-  out_c = Color(uint8_t(255 * angle_ratio), uint8_t(255 * angle_ratio), 255);
+  if (!_uniform) {
+    double grad = incoming.direction().horizontal_gradient();
+    double angle_ratio = std::fabs(std::atan(grad) / (M_PI / 2));
+    out_k = std::numeric_limits<double>::max();
+    out_c = Color(uint8_t(255 * angle_ratio), uint8_t(255 * angle_ratio), 255);
+    return true;
+  }
+
+  out_c = Color::create_white();
   return true;
 }
 
@@ -88,7 +95,28 @@ bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
                                double current_best_k,
                                double &out_k, Color &out_c) {
   if (_sphere.intersect(incoming, out_k)) {
-    out_c = Color::create_red();
+    Vector touch_pt = incoming.at(out_k);
+    Vector reflector_normal = (touch_pt - _sphere.center()).normalize();
+
+    // TODO: low hanging fruit for optimization.
+
+    auto incoming_dir_inverse = (-incoming.direction()).normalize();
+    auto reflection_plane_normal =
+        reflector_normal.cross_product(incoming_dir_inverse);
+
+    auto new_dir = [&]() {
+      if (reflection_plane_normal.is_zero())
+        return incoming_dir_inverse;
+
+      double angle = std::acos(incoming_dir_inverse * reflector_normal);
+      return reflector_normal.rotate(angle, reflection_plane_normal);
+    }();
+
+    auto new_ray = Ray::from_offset_and_direction(
+        touch_pt + reflector_normal * Ruler::epsilon(), new_dir);
+
+    Color c = scene.render_pixel(new_ray);
+    out_c = c * 0.8;
     return true;
   }
 

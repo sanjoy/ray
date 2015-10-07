@@ -23,6 +23,7 @@ private:
 
 class SphericalMirror : public Object {
   Sphere _sphere;
+
 public:
   SphericalMirror(const Vector &center, double radius) :
     _sphere(center, radius) {}
@@ -31,7 +32,11 @@ public:
 };
 
 class SkyObject : public Object {
+  bool _uniform = false;
+
 public:
+  SkyObject(bool uniform = false) : _uniform(uniform) {}
+
   virtual bool incident(const Scene &, const Ray &, double,
                         double &, Color &) override;
 };

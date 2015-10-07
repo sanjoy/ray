@@ -23,6 +23,10 @@ public:
   uint8_t green() const { return _green; }
   uint8_t blue() const { return _blue; }
 
+  Color operator*(float f) {
+    return Color(uint8_t(red() * f), uint8_t(green() * f), uint8_t(blue() * f));
+  }
+
   static Color create_white() { return Color(255, 255, 255); }
   static Color create_black() { return Color(  0,   0,   0); }
 

@@ -25,6 +25,10 @@ struct Ruler {
   static bool is_equal(double d0, double d1) {
     return is_zero<op_count>(d0 - d1);
   }
+
+  static double epsilon() {
+    return std::numeric_limits<double>::round_error() * 750;
+  }
 };
 
 
@@ -152,6 +156,10 @@ class Ray {
 public:
   static Ray from_two_points(Vector from, Vector to) {
     return Ray(from, to - from);
+  }
+
+  static Ray from_offset_and_direction(Vector offset, Vector direction) {
+    return Ray(offset, direction);
   }
 
   void print(std::ostream &out) const {
