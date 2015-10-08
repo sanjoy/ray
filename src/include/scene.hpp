@@ -17,7 +17,6 @@ public:
   }
   Color render_pixel(const Ray &r) const;
 };
-
 }
 
 #endif

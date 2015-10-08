@@ -21,7 +21,6 @@ struct Bitops {
     *reinterpret_cast<uint32_t *>(out) = val;
   }
 };
-
 }
 
 #endif

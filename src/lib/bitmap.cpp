@@ -4,10 +4,10 @@
 
 using namespace ray;
 
-Bitmap::Bitmap(unsigned h, unsigned w, Color background) :
-  _height(h), _width(w) {
+Bitmap::Bitmap(unsigned h, unsigned w, Color background)
+    : _height(h), _width(w) {
 
-  _image = std::unique_ptr<Color []>(new Color[pixel_count()]);
+  _image = std::unique_ptr<Color[]>(new Color[pixel_count()]);
 
   std::fill(&_image[0], &_image[pixel_count()], background);
 }
@@ -41,10 +41,10 @@ void Bitmap::write(std::ostream &out) {
   write_4byte(width());
   write_4byte(height());
 
-  uint8_t reserved_1[2] = { 1, 0 };
+  uint8_t reserved_1[2] = {1, 0};
   out.write((char *)reserved_1, 2);
 
-  uint8_t bits_per_pixel[2] = { 24, 0 };
+  uint8_t bits_per_pixel[2] = {24, 0};
   out.write((char *)bits_per_pixel, 2);
 
   uint32_t compression_method = 0;

@@ -5,26 +5,28 @@
 
 using namespace ray;
 
-#define CHECK(pred, msg) do {                                   \
-    if (!(pred)) {                                              \
-      std::cerr << #pred << " failed in "                       \
-                << __FILE__ << ":" << __LINE__ << std::endl;    \
-      std::cerr << msg << std::endl;                            \
-    }                                                           \
+#define CHECK(pred, msg)                                                       \
+  do {                                                                         \
+    if (!(pred)) {                                                             \
+      std::cerr << #pred << " failed in " << __FILE__ << ":" << __LINE__       \
+                << std::endl;                                                  \
+      std::cerr << msg << std::endl;                                           \
+    }                                                                          \
   } while (false)
 
-#define CHECK0(pred) do {                                       \
-    if (!(pred)) {                                              \
-      std::cerr << #pred << " failed in "                       \
-                << __FILE__ << ":" << __LINE__ << std::endl;    \
-    }                                                           \
+#define CHECK0(pred)                                                           \
+  do {                                                                         \
+    if (!(pred)) {                                                             \
+      std::cerr << #pred << " failed in " << __FILE__ << ":" << __LINE__       \
+                << std::endl;                                                  \
+    }                                                                          \
   } while (false)
 
 static void test_cross_product() {
   Vector v;
   Vector vi = Vector::get_i();
-  Vector vj = Vector::get_j();;
-  Vector vk = Vector::get_k();;
+  Vector vj = Vector::get_j();
+  Vector vk = Vector::get_k();
 
   CHECK0(v.cross_product(v).is_zero());
   CHECK0(vi.cross_product(vi).is_zero());
@@ -51,7 +53,7 @@ static void test_intersection() {
   }
 
   {
-    Ray r0 = Ray::from_two_points(Vector(),        Vector(1.0, 1.0, 0.0));
+    Ray r0 = Ray::from_two_points(Vector(), Vector(1.0, 1.0, 0.0));
     Ray r1 = Ray::from_two_points(Vector::get_i(), Vector(1.0, 1.0, 1.0));
     CHECK(!r0.intersect(r1, x, y), "Not supposed to intersect!");
   }

@@ -11,10 +11,9 @@ class Scene;
 class Object {
 public:
   virtual bool incident(const Scene &scene, const Ray &r,
-                        double current_smallest_k,
-                        double &out_incidence_k, Color &out_pixel) = 0;
+                        double current_smallest_k, double &out_incidence_k,
+                        Color &out_pixel) = 0;
 };
-
 }
 
 #endif

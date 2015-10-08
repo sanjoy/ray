@@ -11,18 +11,15 @@
 namespace ray {
 
 struct Ruler {
-  template<unsigned op_count = 1>
-  static bool is_zero(double d) {
+  template <unsigned op_count = 1> static bool is_zero(double d) {
     return fabs(d) < (op_count * std::numeric_limits<double>::round_error());
   }
 
-  template<unsigned op_count = 1>
-  static bool is_negative(double d) {
+  template <unsigned op_count = 1> static bool is_negative(double d) {
     return d < 0.0;
   }
 
-  template<unsigned op_count = 1>
-  static bool is_equal(double d0, double d1) {
+  template <unsigned op_count = 1> static bool is_equal(double d0, double d1) {
     return is_zero<op_count>(d0 - d1);
   }
 
@@ -30,7 +27,6 @@ struct Ruler {
     return std::numeric_limits<double>::round_error() * 750;
   }
 };
-
 
 class Vector {
   double _i = 0.0;
@@ -55,7 +51,7 @@ public:
 
   bool operator==(const Vector &o) const {
     return Ruler::is_equal(i(), o.i()) && Ruler::is_equal(j(), o.j()) &&
-      Ruler::is_equal(k(), o.k());
+           Ruler::is_equal(k(), o.k());
   }
 
   void print(std::ostream &out) const {
@@ -70,28 +66,23 @@ public:
     return Vector(i() - other.i(), j() - other.j(), k() - other.k());
   }
 
-  Vector operator-() const {
-    return Vector(- i(), - j(), - k());
-  }
+  Vector operator-() const { return Vector(-i(), -j(), -k()); }
 
   double operator*(const Vector &other) const {
     return i() * other.i() + j() * other.j() + k() * other.k();
   }
 
-  Vector operator*(double v) const {
-    return Vector(v * i(), v * j(), v * k());
-  }
+  Vector operator*(double v) const { return Vector(v * i(), v * j(), v * k()); }
 
   Vector cross_product(const Vector &v) const {
-    return Vector(j() * v.k() - k() * v.j(),
-                  k() * v.i() - i() * v.k(),
+    return Vector(j() * v.k() - k() * v.j(), k() * v.i() - i() * v.k(),
                   i() * v.j() - j() * v.i());
   }
 
   bool get_scale(const Vector &v, double &result) const {
     bool found = false;
-    for (auto &p : { std::make_pair(i(), v.i()), std::make_pair(j(), v.j()),
-          std::make_pair(k(), v.k()) }) {
+    for (auto &p : {std::make_pair(i(), v.i()), std::make_pair(j(), v.j()),
+                    std::make_pair(k(), v.k())}) {
       if (found) {
         if (!Ruler::is_equal(p.second * result, p.first))
           return false;
@@ -114,13 +105,9 @@ public:
     return k() / std::sqrt(i() * i() + j() * j());
   }
 
-  double mag() const {
-    return std::sqrt(i() * i() + j() * j() + k() * k());
-  }
+  double mag() const { return std::sqrt(i() * i() + j() * j() + k() * k()); }
 
-  double dist(const Vector &other) const {
-    return (*this - other).mag();
-  }
+  double dist(const Vector &other) const { return (*this - other).mag(); }
 
   Vector normalize() const {
     assert(!Ruler::is_zero(mag()) && "Cannot normalize a zero vector!");
@@ -143,7 +130,6 @@ inline std::ostream &operator<<(std::ostream &out, const Vector &v) {
 }
 
 inline Vector operator*(double d, const Vector &v) { return v * d; }
-
 
 // Represents the ray offset() + k * direction(), propagating towards increasing
 // k.
@@ -180,14 +166,16 @@ public:
     Vector numerator = (r.offset() - offset()).cross_product(r.direction());
     Vector denominator = direction().cross_product(r.direction());
 
-    if (!numerator.get_scale(denominator, k_self)) return false;
+    if (!numerator.get_scale(denominator, k_self))
+      return false;
 
     numerator = offset() + k_self * direction() - r.offset();
     return numerator.get_scale(r.direction(), k_other);
   }
 
   bool contains(const Vector &v, double &out_k) const {
-    if (direction().is_zero()) return false;
+    if (direction().is_zero())
+      return false;
     return (v - offset()).get_scale(direction(), out_k);
   }
 };
@@ -204,8 +192,8 @@ class Plane {
 
 public:
   Plane() {}
-  explicit Plane(const Vector &norm, const Vector &p) :
-    _normal(norm), _point(p) {}
+  explicit Plane(const Vector &norm, const Vector &p)
+      : _normal(norm), _point(p) {}
 
   const Vector &normal() const { return _normal; }
   const Vector &point() const { return _point; }
@@ -214,7 +202,8 @@ public:
   bool intersect(const Ray &r, double &out) const {
     double denom = normal() * r.direction();
 
-    if (Ruler::is_zero(denom)) return false;
+    if (Ruler::is_zero(denom))
+      return false;
 
     out = ((point() - r.offset()) * normal()) / denom;
     return true;
@@ -234,7 +223,7 @@ class ConvexPlaneSegment {
 public:
   ConvexPlaneSegment() {}
   explicit ConvexPlaneSegment(const Plane &ctr, const std::vector<Vector> &&pts)
-    : _container(ctr), _points(pts) {
+      : _container(ctr), _points(pts) {
 #ifndef NDEBUG
     for (const Vector &v : points())
       assert(container().contains(v));
@@ -255,7 +244,7 @@ public:
       return true;
 
     Ray outgoing_ray =
-      Ray::from_two_points(intersection_point, container().point());
+        Ray::from_two_points(intersection_point, container().point());
 
     for (unsigned i = 0, e = points().size(); i != e; ++i) {
       const Vector &p_from = points()[i];
@@ -264,8 +253,8 @@ public:
       double k_boundary, k_ray;
       Ray r = Ray::from_two_points(p_from, p_to);
 
-      if (r.intersect(outgoing_ray, k_boundary, k_ray) &&
-          k_boundary >= 0.0 && k_boundary < 1.0 && k_ray >= 0.0)
+      if (r.intersect(outgoing_ray, k_boundary, k_ray) && k_boundary >= 0.0 &&
+          k_boundary < 1.0 && k_ray >= 0.0)
         intersect_count++;
     }
 
@@ -283,9 +272,9 @@ class RectanglePlaneSegment {
 
 public:
   RectanglePlaneSegment() {}
-  explicit RectanglePlaneSegment(
-    const Plane &ctr, const std::array<Vector, 4> &pts)
-    : _container(ctr), _pts(pts) {
+  explicit RectanglePlaneSegment(const Plane &ctr,
+                                 const std::array<Vector, 4> &pts)
+      : _container(ctr), _pts(pts) {
 #ifndef NDEBUG
     for (const Vector &v : points())
       assert(container().contains(v));
@@ -295,10 +284,10 @@ public:
     _orth_1 = (points()[2] - points()[1]).normalize();
 
     _orth_0_begin = points()[1] * _orth_0;
-    _orth_0_end   = points()[0] * _orth_0;
+    _orth_0_end = points()[0] * _orth_0;
 
     _orth_1_begin = points()[1] * _orth_1;
-    _orth_1_end   = points()[2] * _orth_1;
+    _orth_1_end = points()[2] * _orth_1;
 
     assert(Ruler::is_zero(_orth_0 * _orth_1));
   }
@@ -331,8 +320,8 @@ class Sphere {
 public:
   Sphere() {}
 
-  Sphere(const Vector &center, double radius) :
-    _center(center), _radius(radius), _center_normal(_center.normalize()) {
+  Sphere(const Vector &center, double radius)
+      : _center(center), _radius(radius), _center_normal(_center.normalize()) {
     _rhs = center * center - radius * radius;
   }
 
@@ -344,9 +333,8 @@ public:
 
     double a = r.direction() * r.direction();
     double b =
-      2 * (r.direction() * r.offset()) - 2 * (r.direction() * center());
-    double c =
-      r.offset() * r.offset() - 2 * r.offset() * center() + _rhs;
+        2 * (r.direction() * r.offset()) - 2 * (r.direction() * center());
+    double c = r.offset() * r.offset() - 2 * r.offset() * center() + _rhs;
 
     assert(!Ruler::is_zero(a) && "Direction vector has unit length!");
 
@@ -362,7 +350,6 @@ public:
     return true;
   }
 };
-
 }
 
 #endif

@@ -13,7 +13,7 @@ BoxObject::BoxObject(const Vector &center, const Vector &normal_a,
   Vector n_b = normal_b.normalize();
   Vector n_c = n_a.cross_product(n_b);
 
-  Vector ns[3] = { n_a, n_b, n_c };
+  Vector ns[3] = {n_a, n_b, n_c};
 
   for (unsigned i = 0; i < 3; i++) {
     const Vector &axis_0 = ns[(i + 1) % 3] * side;
@@ -50,8 +50,7 @@ BoxObject::BoxObject(const Vector &center, const Vector &normal_a,
 }
 
 bool BoxObject::incident(const Scene &scene, const Ray &incoming,
-                         double current_best_k,
-                         double &out_k, Color &out_c) {
+                         double current_best_k, double &out_k, Color &out_c) {
   double smallest_k = std::numeric_limits<double>::infinity();
 
   unsigned idx = 0;
@@ -65,7 +64,8 @@ bool BoxObject::incident(const Scene &scene, const Ray &incoming,
     idx++;
   }
 
-  if (found_idx == -1) return false;
+  if (found_idx == -1)
+    return false;
 
   out_c = _colors[found_idx];
   out_k = smallest_k;
@@ -73,8 +73,7 @@ bool BoxObject::incident(const Scene &scene, const Ray &incoming,
 }
 
 bool SkyObject::incident(const Scene &scene, const Ray &incoming,
-                         double current_best_k,
-                         double &out_k, Color &out_c) {
+                         double current_best_k, double &out_k, Color &out_c) {
   if (current_best_k < std::numeric_limits<double>::max())
     return false;
 
@@ -90,10 +89,9 @@ bool SkyObject::incident(const Scene &scene, const Ray &incoming,
   return true;
 }
 
-
 bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
-                               double current_best_k,
-                               double &out_k, Color &out_c) {
+                               double current_best_k, double &out_k,
+                               Color &out_c) {
 
   if (_current_nesting >= _max_nesting)
     return false;
@@ -103,7 +101,7 @@ bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
     auto reflector_normal = (touch_pt - _sphere.center()).normalize();
     auto incoming_dir_inverse = (-incoming.direction()).normalize();
     auto reflector_normal_scaled =
-      (incoming_dir_inverse * reflector_normal) * reflector_normal;
+        (incoming_dir_inverse * reflector_normal) * reflector_normal;
     auto new_dir = 2 * reflector_normal_scaled - incoming_dir_inverse;
     auto new_ray = Ray::from_offset_and_direction(
         touch_pt + reflector_normal * Ruler::epsilon(), new_dir);

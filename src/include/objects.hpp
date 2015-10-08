@@ -13,8 +13,8 @@ public:
   static constexpr unsigned FACE_COUNT = 6;
   BoxObject(const Vector &center, const Vector &normal_a,
             const Vector &normal_b, double side);
-  virtual bool incident(const Scene &, const Ray &, double,
-                        double &, Color &) override;
+  virtual bool incident(const Scene &, const Ray &, double, double &,
+                        Color &) override;
 
 private:
   RectanglePlaneSegment _faces[FACE_COUNT];
@@ -27,10 +27,10 @@ class SphericalMirror : public Object {
   unsigned _current_nesting = 0;
 
 public:
-  SphericalMirror(const Vector &center, double radius) :
-    _sphere(center, radius) {}
-  virtual bool incident(const Scene &, const Ray &, double,
-                        double &, Color &) override;
+  SphericalMirror(const Vector &center, double radius)
+      : _sphere(center, radius) {}
+  virtual bool incident(const Scene &, const Ray &, double, double &,
+                        Color &) override;
 };
 
 class SkyObject : public Object {
@@ -39,10 +39,9 @@ class SkyObject : public Object {
 public:
   SkyObject(bool uniform = false) : _uniform(uniform) {}
 
-  virtual bool incident(const Scene &, const Ray &, double,
-                        double &, Color &) override;
+  virtual bool incident(const Scene &, const Ray &, double, double &,
+                        Color &) override;
 };
-
 }
 
 #endif

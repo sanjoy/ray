@@ -16,8 +16,8 @@ class Color {
 public:
   Color() {}
 
-  explicit Color(uint8_t red, uint8_t green, uint8_t blue) :
-    _red(red), _green(green), _blue(blue) {}
+  explicit Color(uint8_t red, uint8_t green, uint8_t blue)
+      : _red(red), _green(green), _blue(blue) {}
 
   uint8_t red() const { return _red; }
   uint8_t green() const { return _green; }
@@ -28,11 +28,11 @@ public:
   }
 
   static Color create_white() { return Color(255, 255, 255); }
-  static Color create_black() { return Color(  0,   0,   0); }
+  static Color create_black() { return Color(0, 0, 0); }
 
-  static Color create_red()   { return Color(255,   0,   0); }
-  static Color create_green() { return Color(  0, 255,   0); }
-  static Color create_blue()  { return Color(  0,   0, 255); }
+  static Color create_red() { return Color(255, 0, 0); }
+  static Color create_green() { return Color(0, 255, 0); }
+  static Color create_blue() { return Color(0, 0, 255); }
 };
 
 class Bitmap {
@@ -54,7 +54,6 @@ public:
 
   void write(std::ostream &out);
 };
-
 }
 
 #endif

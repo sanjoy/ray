@@ -20,13 +20,12 @@ class Camera {
   const Vector &_focus_position;
 
 public:
-  explicit Camera(const Scene &s, double focal_length,
-                  unsigned screen_width_px, unsigned screen_height_px,
-                  unsigned screen_resolution, const Vector &pos);
+  explicit Camera(const Scene &s, double focal_length, unsigned screen_width_px,
+                  unsigned screen_height_px, unsigned screen_resolution,
+                  const Vector &pos);
 
   Bitmap snap();
 };
-
 }
 
 #endif
