@@ -18,7 +18,7 @@ struct Ruler {
 
   template<unsigned op_count = 1>
   static bool is_negative(double d) {
-    return d < (op_count * std::numeric_limits<double>::round_error());
+    return d < 0.0;
   }
 
   template<unsigned op_count = 1>
@@ -348,12 +348,7 @@ public:
     double c =
       r.offset() * r.offset() - 2 * r.offset() * center() + _rhs;
 
-    if (Ruler::is_zero(a)) {
-      if (Ruler::is_zero(b))
-        return false;
-      out = - (c / b);
-      return true;
-    }
+    assert(!Ruler::is_zero(a) && "Direction vector has unit length!");
 
     double disc_sqr = b * b - 4 * a * c;
     if (Ruler::is_negative(disc_sqr))

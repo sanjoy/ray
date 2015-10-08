@@ -35,11 +35,13 @@ int main(int argc, char **argv) {
       init_normal_b = init_normal_b.rotate(1.3, init_normal_a);
     }
 
-    s.add_object(std::unique_ptr<SkyObject>(new ray::SkyObject(true)));
-    s.add_object(std::unique_ptr<SphericalMirror>(new ray::SphericalMirror(
-        Vector::get_i() * 4500 + Vector::get_j() * 2000, 600)));
+    s.add_object(std::unique_ptr<SkyObject>(new ray::SkyObject()));
+    s.add_object(std::unique_ptr<SphericalMirror>(
+                   new ray::SphericalMirror(
+                     Vector::get_i() * 4500 + Vector::get_j() * 2000 +
+                     Vector::get_k() * 2000, 600)));
 
-    ray::Camera c(s, 6.0, 2000, 2000, 150, ray::Vector());
+    ray::Camera c(s, 6.0, 5000, 2500, 200, ray::Vector());
     ray::Bitmap bmp = c.snap();
     std::ofstream out("/tmp/out.bmp", std::ofstream::binary);
     bmp.write(out);
