@@ -81,7 +81,7 @@ bool SkyObject::incident(const Scene &scene, const Ray &incoming,
     out_c = Color::create_white();
   else {
     double grad = incoming.direction().horizontal_gradient();
-    double angle_ratio = std::fabs(std::atan(grad) / (M_PI / 2));
+    double angle_ratio = std::fabs(std::atan(grad * 1.8) / (M_PI / 2));
     out_k = std::numeric_limits<double>::max();
     out_c = Color(uint8_t(255 * angle_ratio), uint8_t(255 * angle_ratio), 255);
   }
