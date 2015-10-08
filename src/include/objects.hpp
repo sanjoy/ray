@@ -23,6 +23,8 @@ private:
 
 class SphericalMirror : public Object {
   Sphere _sphere;
+  unsigned _max_nesting = 10;
+  unsigned _current_nesting = 0;
 
 public:
   SphericalMirror(const Vector &center, double radius) :

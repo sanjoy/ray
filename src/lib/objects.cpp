@@ -94,6 +94,10 @@ bool SkyObject::incident(const Scene &scene, const Ray &incoming,
 bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
                                double current_best_k,
                                double &out_k, Color &out_c) {
+
+  if (_current_nesting >= _max_nesting)
+    return false;
+
   if (_sphere.intersect(incoming, out_k) && out_k >= 0.0) {
     auto touch_pt = incoming.at(out_k);
     auto reflector_normal = (touch_pt - _sphere.center()).normalize();
@@ -104,7 +108,9 @@ bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
     auto new_ray = Ray::from_offset_and_direction(
         touch_pt + reflector_normal * Ruler::epsilon(), new_dir);
 
+    _current_nesting++;
     out_c = scene.render_pixel(new_ray) * 0.8;
+    _current_nesting--;
     return true;
   }
 
