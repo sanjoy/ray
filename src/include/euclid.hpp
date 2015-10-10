@@ -267,7 +267,7 @@ public:
   }
 };
 
-// Finite convex segment of a plane
+// Rectangle shaped segment of a plane
 class RectanglePlaneSegment {
   Plane _container;
   std::array<Vector, 3> _pts;
