@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
         unique_ptr<SphericalMirror>(new SphericalMirror(sphere_pos_b, 600)));
 
     s.add_object(
-      unique_ptr<SphericalMirror>(new SphericalMirror(sphere_pos_c, 600)));
+        unique_ptr<SphericalMirror>(new SphericalMirror(sphere_pos_c, 600)));
 
     Camera c(s, 6.0, 5000, 2500, 200, ray::Vector());
     Bitmap bmp = c.snap();
