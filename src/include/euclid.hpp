@@ -195,6 +195,11 @@ public:
   explicit Plane(const Vector &norm, const Vector &p)
       : _normal(norm), _point(p) {}
 
+  explicit Plane(const std::array<Vector, 3> &pts) {
+    _normal = (pts[1] - pts[0]).cross_product(pts[2] - pts[0]).normalize();
+    _point = pts[0];
+  }
+
   const Vector &normal() const { return _normal; }
   const Vector &point() const { return _point; }
 
@@ -265,16 +270,15 @@ public:
 // Finite convex segment of a plane
 class RectanglePlaneSegment {
   Plane _container;
-  std::array<Vector, 4> _pts;
+  std::array<Vector, 3> _pts;
   Vector _orth_0, _orth_1;
   double _orth_0_begin, _orth_0_end;
   double _orth_1_begin, _orth_1_end;
 
 public:
   RectanglePlaneSegment() {}
-  explicit RectanglePlaneSegment(const Plane &ctr,
-                                 const std::array<Vector, 4> &pts)
-      : _container(ctr), _pts(pts) {
+  explicit RectanglePlaneSegment(const std::array<Vector, 3> &pts)
+      : _container(pts), _pts(pts) {
 #ifndef NDEBUG
     for (const Vector &v : points())
       assert(container().contains(v));
@@ -293,7 +297,7 @@ public:
   }
 
   const Plane &container() const { return _container; }
-  const std::array<Vector, 4> &points() const { return _pts; }
+  const std::array<Vector, 3> &points() const { return _pts; }
 
   bool intersect(const Ray &r, double &out) const {
     if (!container().intersect(r, out))

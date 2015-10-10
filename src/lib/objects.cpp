@@ -24,15 +24,13 @@ BoxObject::BoxObject(const Vector &center, const Vector &normal_a,
 
     for (int sign : {-1, 1}) {
       Vector pt_in_plane = center + sign * ns[i] * side;
-      Plane p(ns[i], pt_in_plane);
 
-      std::array<Vector, 4> pts;
+      std::array<Vector, 3> pts;
       pts[0] = pt_in_plane + axis_0 + axis_1;
       pts[1] = pt_in_plane + axis_0 - axis_1;
       pts[2] = pt_in_plane - axis_0 - axis_1;
-      pts[3] = pt_in_plane - axis_0 + axis_1;
 
-      RectanglePlaneSegment rps(p, pts);
+      RectanglePlaneSegment rps(pts);
       if (sign == -1)
         _faces[2 * i] = rps;
       else
