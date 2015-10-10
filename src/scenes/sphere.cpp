@@ -46,11 +46,16 @@ int main(int argc, char **argv) {
     auto sphere_pos_b = Vector::get_i() * 4500 - Vector::get_j() * 2000 -
                         Vector::get_k() * 2000;
 
+    auto sphere_pos_c = Vector::get_i() * 3500;
+
     s.add_object(
         unique_ptr<SphericalMirror>(new SphericalMirror(sphere_pos_a, 600)));
 
     s.add_object(
         unique_ptr<SphericalMirror>(new SphericalMirror(sphere_pos_b, 600)));
+
+    s.add_object(
+      unique_ptr<SphericalMirror>(new SphericalMirror(sphere_pos_c, 600)));
 
     Camera c(s, 6.0, 5000, 2500, 200, ray::Vector());
     Bitmap bmp = c.snap();
