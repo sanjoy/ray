@@ -29,14 +29,14 @@ int main(int argc, char **argv) {
       Vector position = Vector::get_i() * 3500 +
                         Vector::get_j() * 1500 * (i - 4) +
                         Vector::get_k() * 1200 * ((i % 4) - 2);
-      std::unique_ptr<BoxObject> box(
-          new ray::BoxObject(position, init_normal_a, init_normal_b, 200.0));
+      std::unique_ptr<BoxObj> box(
+          new ray::BoxObj(position, init_normal_a, init_normal_b, 200.0));
       s.add_object(std::move(box));
       init_normal_a = init_normal_a.rotate(0.3, init_normal_b);
       init_normal_b = init_normal_b.rotate(1.3, init_normal_a);
     }
 
-    s.add_object(std::unique_ptr<SkyObject>(new ray::SkyObject()));
+    s.add_object(std::unique_ptr<SkyObj>(new ray::SkyObj));
 
     ray::Camera c(s, 6.0, 2000, 2000, 150, ray::Vector());
     ray::Bitmap bmp = c.snap();

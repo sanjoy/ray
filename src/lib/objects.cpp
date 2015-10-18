@@ -7,8 +7,8 @@
 
 using namespace ray;
 
-BoxObject::BoxObject(const Vector &center, const Vector &normal_a,
-                     const Vector &normal_b, double side) {
+BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
+               const Vector &normal_b, double side) {
   Vector n_a = normal_a.normalize();
   Vector n_b = normal_b.normalize();
   Vector n_c = n_a.cross_product(n_b);
@@ -47,8 +47,8 @@ BoxObject::BoxObject(const Vector &center, const Vector &normal_a,
   _colors[5] = Color(71, 0, 71);
 }
 
-bool BoxObject::incident(const Scene &scene, const Ray &incoming,
-                         double current_best_k, double &out_k, Color &out_c) {
+bool BoxObj::incident(const Scene &scene, const Ray &incoming,
+                      double current_best_k, double &out_k, Color &out_c) {
   double smallest_k = std::numeric_limits<double>::infinity();
 
   unsigned idx = 0;
@@ -70,8 +70,8 @@ bool BoxObject::incident(const Scene &scene, const Ray &incoming,
   return true;
 }
 
-bool SkyObject::incident(const Scene &scene, const Ray &incoming,
-                         double current_best_k, double &out_k, Color &out_c) {
+bool SkyObj::incident(const Scene &scene, const Ray &incoming,
+                      double current_best_k, double &out_k, Color &out_c) {
   if (current_best_k < std::numeric_limits<double>::max())
     return false;
 
@@ -87,9 +87,9 @@ bool SkyObject::incident(const Scene &scene, const Ray &incoming,
   return true;
 }
 
-bool SphericalMirror::incident(const Scene &scene, const Ray &incoming,
-                               double current_best_k, double &out_k,
-                               Color &out_c) {
+bool SphericalMirrorObj::incident(const Scene &scene, const Ray &incoming,
+                                  double current_best_k, double &out_k,
+                                  Color &out_c) {
 
   if (_current_nesting >= _max_nesting)
     return false;
