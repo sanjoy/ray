@@ -17,8 +17,8 @@ public:
                         Color &) override;
 
 private:
-  RectanglePlaneSegment _faces[FACE_COUNT];
-  Color _colors[FACE_COUNT];
+  std::array<RectanglePlaneSegment, FACE_COUNT> _faces;
+  std::array<Color, FACE_COUNT> _colors;
 };
 
 class SphericalMirrorObj : public Object {

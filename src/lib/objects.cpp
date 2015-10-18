@@ -7,8 +7,9 @@
 
 using namespace ray;
 
-BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
-               const Vector &normal_b, double side) {
+static void create_cube_faces(const Vector &center, const Vector &normal_a,
+                              const Vector &normal_b, double side,
+                              std::array<RectanglePlaneSegment, 6> &out_faces) {
   Vector n_a = normal_a.normalize();
   Vector n_b = normal_b.normalize();
   Vector n_c = n_a.cross_product(n_b);
@@ -32,11 +33,17 @@ BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
 
       RectanglePlaneSegment rps(pts);
       if (sign == -1)
-        _faces[2 * i] = rps;
+        out_faces[2 * i] = rps;
       else
-        _faces[2 * i + 1] = rps;
+        out_faces[2 * i + 1] = rps;
     }
   }
+};
+
+BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
+               const Vector &normal_b, double side) {
+
+  create_cube_faces(center, normal_a, normal_b, side, _faces);
 
   _colors[0] = Color(61, 31, 0);
   _colors[1] = Color(102, 0, 60);
