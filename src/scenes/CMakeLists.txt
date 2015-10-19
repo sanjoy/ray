@@ -5,3 +5,6 @@ target_link_libraries(basic ray)
 
 add_executable(sphere sphere.cpp)
 target_link_libraries(sphere ray)
+
+add_executable(refraction refraction.cpp)
+target_link_libraries(refraction ray)
