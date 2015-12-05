@@ -140,6 +140,8 @@ class Ray {
   explicit Ray(Vector o, Vector d) : _direction(d), _offset(o) {}
 
 public:
+  Ray() {}
+
   static Ray from_two_points(Vector from, Vector to) {
     return Ray(from, to - from);
   }
@@ -297,6 +299,7 @@ public:
   }
 
   const Plane &container() const { return _container; }
+  const Vector &normal() const { return container().normal(); }
   const std::array<Vector, 3> &points() const { return _pts; }
 
   bool intersect(const Ray &r, double &out) const {

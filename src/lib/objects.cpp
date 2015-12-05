@@ -40,6 +40,27 @@ static void create_cube_faces(const Vector &center, const Vector &normal_a,
   }
 };
 
+template<unsigned N>
+static bool intersect_faces(const std::array<RectanglePlaneSegment, N> &faces,
+                            const Ray &r, double &out_k, unsigned &out_idx) {
+  double smallest_k = std::numeric_limits<double>::infinity();
+  unsigned found_idx = -1;
+
+  for (unsigned i = 0; i < N; i++) {
+    double k;
+    if (faces[i].intersect(r, k) && k < smallest_k) {
+      smallest_k = k;
+      found_idx = i;
+    }
+  }
+
+  if (found_idx == -1) return false;
+
+  out_idx = found_idx;
+  out_k = smallest_k;
+  return true;
+}
+
 BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
                const Vector &normal_b, double side) {
 
@@ -56,25 +77,13 @@ BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
 
 bool BoxObj::incident(const Scene &scene, const Ray &incoming,
                       double current_best_k, double &out_k, Color &out_c) {
-  double smallest_k = std::numeric_limits<double>::infinity();
-
-  unsigned idx = 0;
-  unsigned found_idx = -1;
-  for (RectanglePlaneSegment &rps : _faces) {
-    double k;
-    if (rps.intersect(incoming, k) && k < smallest_k) {
-      smallest_k = k;
-      found_idx = idx;
-    }
-    idx++;
+  unsigned idx;
+  if (intersect_faces<FACE_COUNT>(_faces, incoming, out_k, idx)) {
+    out_c = _colors[idx];
+    return true;
   }
 
-  if (found_idx == -1)
-    return false;
-
-  out_c = _colors[found_idx];
-  out_k = smallest_k;
-  return true;
+  return false;
 }
 
 bool SkyObj::incident(const Scene &scene, const Ray &incoming,
@@ -98,7 +107,7 @@ bool SphericalMirrorObj::incident(const Scene &scene, const Ray &incoming,
                                   double current_best_k, double &out_k,
                                   Color &out_c) {
 
-  if (_current_nesting >= _max_nesting)
+  if (_current_nesting >= SphericalMirrorObj::max_nesting())
     return false;
 
   if (_sphere.intersect(incoming, out_k) && out_k >= 0.0) {
@@ -118,4 +127,62 @@ bool SphericalMirrorObj::incident(const Scene &scene, const Ray &incoming,
   }
 
   return false;
+}
+
+RefractiveBoxObj::RefractiveBoxObj(const Vector &center, const Vector &normal_a,
+                                   const Vector &normal_b, double side) {
+  create_cube_faces(center, normal_a, normal_b, side, _faces);
+}
+
+bool RefractiveBoxObj::incident(const Scene &scene, const Ray &incoming,
+                                double current_best_k, double &out_k,
+                                Color &out_c) {
+  if (_current_nesting >= RefractiveBoxObj::max_nesting())
+    return false;
+
+  auto refract_ray = [&](const Ray &r, const double refract_ratio,
+                         bool invert_face_normals, Ray &out_r) {
+    double incident_k;
+    unsigned incident_idx;
+    if (!intersect_faces<FACE_COUNT>(faces(), r, incident_k, incident_idx))
+      return false;
+
+    Vector normal = faces()[incident_idx].normal();
+    if (invert_face_normals)
+      normal = normal * (-1.0);
+
+    double cos_of_incoming = r.direction().normalize() * normal;
+
+    double sin_sqr_theta_t =
+      std::pow(refract_ratio, 2) * (1 - std::pow(cos_of_incoming, 2));
+    double disc = 1 - sin_sqr_theta_t;
+    if (disc >= 0.0) {
+      // Refraction
+      double normal_factor = refract_ratio * cos_of_incoming - std::sqrt(disc);
+      Vector new_dir = refract_ratio * r.direction() + normal * normal_factor;
+
+      out_r = Ray::from_offset_and_direction(incoming.at(incident_k), new_dir);
+      return true;
+    }
+
+    // Total internal reflection
+    auto r_dir_inverse = (-r.direction()).normalize();
+    auto reflector_normal_scaled = (r_dir_inverse * normal) * normal;
+    auto new_dir = 2 * reflector_normal_scaled - r_dir_inverse;
+    out_r = Ray::from_offset_and_direction(
+      incoming.at(incident_k) + normal * Ruler::epsilon(), new_dir);
+    return true;
+  };
+
+  constexpr double ratio0 = 1.0 / _relative_refractive_index;
+  constexpr double ratio1 = _relative_refractive_index;
+  Ray r0, r1;
+  if (!refract_ray(incoming, ratio0, false, r0) ||
+      !refract_ray(r0, ratio1, true, r1))
+    return false;
+
+  _current_nesting++;
+  out_c = scene.render_pixel(r1) * 0.9;
+  _current_nesting--;
+  return true;
 }

@@ -23,8 +23,10 @@ private:
 
 class SphericalMirrorObj : public Object {
   Sphere _sphere;
-  unsigned _max_nesting = 10;
+  static constexpr unsigned _max_nesting = 10;
   unsigned _current_nesting = 0;
+
+  static unsigned max_nesting() { return SphericalMirrorObj::_max_nesting; }
 
 public:
   SphericalMirrorObj(const Vector &center, double radius)
@@ -41,6 +43,25 @@ public:
 
   virtual bool incident(const Scene &, const Ray &, double, double &,
                         Color &) override;
+};
+
+class RefractiveBoxObj : public Object {
+  static constexpr unsigned FACE_COUNT = 6;
+  std::array<RectanglePlaneSegment, FACE_COUNT> _faces;
+  static constexpr double _relative_refractive_index = 1.5;
+
+  static constexpr unsigned _max_nesting = 10;
+  unsigned _current_nesting = 0;
+
+  static unsigned max_nesting() { return RefractiveBoxObj::_max_nesting; }
+
+public:
+  RefractiveBoxObj(const Vector &center, const Vector &normal_a,
+                   const Vector &normal_b, double side);
+  virtual bool incident(const Scene &, const Ray &, double, double &,
+                        Color &) override;
+
+  std::array<RectanglePlaneSegment, FACE_COUNT> &faces() { return _faces; }
 };
 }
 

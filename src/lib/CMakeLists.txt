@@ -5,4 +5,5 @@ add_library(ray
   camera.cpp
   objects.cpp
   scene.cpp
+  support.cpp
   )
