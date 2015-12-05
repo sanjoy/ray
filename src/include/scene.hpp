@@ -2,6 +2,7 @@
 #define RAY_SCENE_HPP
 
 #include "object.hpp"
+#include "context.hpp"
 
 #include <memory>
 #include <vector>
@@ -15,7 +16,9 @@ public:
   void add_object(std::unique_ptr<Object> o) {
     _objects.push_back(std::move(o));
   }
-  Color render_pixel(const Ray &r) const;
+  Color render_pixel(const Ray &r, Context &ctx) const;
+  void init_object_ids(Context &ctx) const;
+  unsigned object_count() const { return _objects.size(); }
 };
 }
 

@@ -335,7 +335,7 @@ public:
   const Vector &center() const { return _center; }
   double radius() const { return _radius; }
 
-  bool intersect(const Ray &r, double &out) {
+  bool intersect(const Ray &r, double &out) const {
     // k^2 * a + k * b + c = 0
 
     double a = r.direction() * r.direction();

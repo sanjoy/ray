@@ -75,8 +75,9 @@ BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
   _colors[5] = Color(71, 0, 71);
 }
 
-bool BoxObj::incident(const Scene &scene, const Ray &incoming,
-                      double current_best_k, double &out_k, Color &out_c) {
+bool BoxObj::incident(Context &, const Scene &, const Ray &incoming,
+                      double current_best_k, double &out_k,
+                      Color &out_c) const {
   unsigned idx;
   if (intersect_faces<FACE_COUNT>(_faces, incoming, out_k, idx)) {
     out_c = _colors[idx];
@@ -86,8 +87,9 @@ bool BoxObj::incident(const Scene &scene, const Ray &incoming,
   return false;
 }
 
-bool SkyObj::incident(const Scene &scene, const Ray &incoming,
-                      double current_best_k, double &out_k, Color &out_c) {
+bool SkyObj::incident(Context &, const Scene &, const Ray &incoming,
+                      double current_best_k, double &out_k,
+                      Color &out_c) const {
   if (current_best_k < std::numeric_limits<double>::max())
     return false;
 
@@ -103,11 +105,11 @@ bool SkyObj::incident(const Scene &scene, const Ray &incoming,
   return true;
 }
 
-bool SphericalMirrorObj::incident(const Scene &scene, const Ray &incoming,
-                                  double current_best_k, double &out_k,
-                                  Color &out_c) {
-
-  if (_current_nesting >= SphericalMirrorObj::max_nesting())
+bool SphericalMirrorObj::incident(Context &ctx, const Scene &scene,
+                                  const Ray &incoming, double current_best_k,
+                                  double &out_k, Color &out_c) const {
+  intptr_t &nesting = ctx.get(object_id());
+  if (nesting >= SphericalMirrorObj::max_nesting())
     return false;
 
   if (_sphere.intersect(incoming, out_k) && out_k >= 0.0) {
@@ -120,9 +122,9 @@ bool SphericalMirrorObj::incident(const Scene &scene, const Ray &incoming,
     auto new_ray = Ray::from_offset_and_direction(
         touch_pt + reflector_normal * Ruler::epsilon(), new_dir);
 
-    _current_nesting++;
-    out_c = scene.render_pixel(new_ray) * 0.8;
-    _current_nesting--;
+    nesting++;
+    out_c = scene.render_pixel(new_ray, ctx) * 0.8;
+    nesting--;
     return true;
   }
 
@@ -134,10 +136,11 @@ RefractiveBoxObj::RefractiveBoxObj(const Vector &center, const Vector &normal_a,
   create_cube_faces(center, normal_a, normal_b, side, _faces);
 }
 
-bool RefractiveBoxObj::incident(const Scene &scene, const Ray &incoming,
-                                double current_best_k, double &out_k,
-                                Color &out_c) {
-  if (_current_nesting >= RefractiveBoxObj::max_nesting())
+bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
+                                const Ray &incoming, double current_best_k,
+                                double &out_k, Color &out_c) const {
+  intptr_t &nesting = ctx.get(object_id());
+  if (nesting >= RefractiveBoxObj::max_nesting())
     return false;
 
   auto refract_ray = [&](const Ray &r, const double refract_ratio,
@@ -181,8 +184,8 @@ bool RefractiveBoxObj::incident(const Scene &scene, const Ray &incoming,
       !refract_ray(r0, ratio1, true, r1))
     return false;
 
-  _current_nesting++;
-  out_c = scene.render_pixel(r1) * 0.9;
-  _current_nesting--;
+  nesting++;
+  out_c = scene.render_pixel(r1, ctx) * 0.9;
+  nesting--;
   return true;
 }
