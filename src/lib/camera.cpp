@@ -1,8 +1,58 @@
 #include "camera.hpp"
 
+#include <thread>
+
 #include "context.hpp"
 
 using namespace ray;
+
+template <typename RenderFnTy> struct ThreadTask {
+public:
+  class Point {
+    int _x;
+    int _y;
+
+  public:
+    /* implict */ Point(int x, int y) : _x(x), _y(y) {}
+
+    int x() const { return _x; }
+    int y() const { return _y; }
+  };
+
+  explicit ThreadTask(Point top_left, Point bottom_right, RenderFnTy &render_fn)
+      : _top_left(top_left), _bottom_right(bottom_right),
+        _render_fn(render_fn) {
+    _result.reset(new Color[(bottom_right.x() - top_left.x()) *
+                            (bottom_right.y() - top_left.y())]);
+  }
+
+  void do_threaded_work() {
+    auto &render_fn = _render_fn;
+    for (int xi = _top_left.x(), xe = _bottom_right.x(); xi != xe; ++xi)
+      for (int yi = _top_left.y(), ye = _bottom_right.y(); yi != ye; ++yi)
+        at(xi, yi) = render_fn(xi, yi);
+  }
+
+  template <typename DrainFnTy> void drain_work(const DrainFnTy &drain_fn) {
+    for (int xi = _top_left.x(), xe = _bottom_right.x(); xi != xe; ++xi)
+      for (int yi = _top_left.y(), ye = _bottom_right.y(); yi != ye; ++yi)
+        drain_fn(xi, yi, at(xi, yi));
+  }
+
+private:
+  Point _top_left;
+  Point _bottom_right;
+  RenderFnTy &_render_fn;
+  std::unique_ptr<Color[]> _result;
+
+  Color &at(int x, int y) {
+    int x_offset = x - _top_left.x();
+    int y_offset = y - _top_left.y();
+    int y_size = _bottom_right.y() - _top_left.y();
+
+    return _result[x_offset * y_size + y_offset];
+  }
+};
 
 Camera::Camera(const Scene &s, double focal_length, unsigned screen_width_px,
                unsigned screen_height_px, unsigned screen_resolution,
@@ -19,22 +69,52 @@ Bitmap Camera::snap() {
   double max_diag_square =
     std::pow(_screen_height_px / 2, 2) + std::pow(_screen_width_px / 2, 2);
 
-  auto scale = [max_diag_square](int x, int y) {
-    return 1.0 + (x * x + y * y) / max_diag_square;
+  auto &scene = _scene;
+  double focal_length = _focal_length;
+  unsigned resolution = _screen_resolution;
+  auto focus = _focus_position;
+
+  auto render_one_pixel = [&](int x, int y) {
+    double scale = 1.0 + (x * x + y * y) / max_diag_square;
+    const Vector sample_pt(focal_length, (x * scale) / resolution,
+                           (y * scale) / resolution);
+    return scene.render_pixel(Ray::from_two_points(focus, focus + sample_pt),
+                              ctx);
   };
 
-  for (int xi = -(_screen_width_px / 2), xe = (_screen_width_px / 2); xi != xe;
-       ++xi)
-    for (int yi = -(_screen_height_px / 2), ye = (_screen_height_px / 2);
-         yi != ye; ++yi) {
-      double s = scale(xi, yi);
-      const Vector sample_pt(_focal_length, (xi * s) / _screen_resolution,
-                             (yi * s) / _screen_resolution);
-      Ray r =
-          Ray::from_two_points(_focus_position, _focus_position + sample_pt);
-      Color c = _scene.render_pixel(r, ctx);
-      bmp.at(xi + _screen_width_px / 2, yi + _screen_height_px / 2) = c;
-    }
+  typedef decltype(render_one_pixel) RenderFnTy;
+
+  std::vector<ThreadTask<RenderFnTy>> subtasks;
+  std::vector<std::thread> threads;
+
+  const int total_threads = 15;
+
+  int x_begin = -(_screen_width_px / 2);
+  int x_delta = _screen_width_px / total_threads;
+
+  for (int i = 0; i < total_threads; i++) {
+    int x_end =
+        i == (total_threads - 1) ? (_screen_width_px / 2) : (x_begin + x_delta);
+    ThreadTask<RenderFnTy>::Point p0(x_begin, -(_screen_height_px / 2));
+    ThreadTask<RenderFnTy>::Point p1(x_end, (_screen_height_px / 2));
+    subtasks.emplace_back(p0, p1, render_one_pixel);
+    x_begin = x_end;
+  }
+
+  for (int i = 0; i < total_threads; i++) {
+    auto *task = &subtasks[i];
+    threads.emplace_back([task]() { task->do_threaded_work(); });
+  }
+
+  int x_bmp_delta = _screen_width_px / 2, y_bmp_delta = _screen_height_px / 2;
+
+  for (int i = 0; i < total_threads; i++) {
+    threads[i].join();
+    subtasks[i].drain_work(
+        [&bmp, x_bmp_delta, y_bmp_delta](int x, int y, const Color &c) {
+          bmp.at(x + x_bmp_delta, y + y_bmp_delta) = c;
+        });
+  }
 
   return bmp;
 }
