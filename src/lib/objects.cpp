@@ -144,10 +144,10 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
     return false;
 
   auto refract_ray = [&](const Ray &r, const double refract_ratio,
-                         bool invert_face_normals, Ray &out_r) {
-    double incident_k;
+                         bool invert_face_normals, Ray &out_r,
+                         double &out_incident_k) {
     unsigned incident_idx;
-    if (!intersect_faces<FACE_COUNT>(faces(), r, incident_k, incident_idx))
+    if (!intersect_faces<FACE_COUNT>(faces(), r, out_incident_k, incident_idx))
       return false;
 
     Vector normal = faces()[incident_idx].normal();
@@ -164,7 +164,8 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
       double normal_factor = refract_ratio * cos_of_incoming - std::sqrt(disc);
       Vector new_dir = refract_ratio * r.direction() + normal * normal_factor;
 
-      out_r = Ray::from_offset_and_direction(incoming.at(incident_k), new_dir);
+      out_r =
+          Ray::from_offset_and_direction(incoming.at(out_incident_k), new_dir);
       return true;
     }
 
@@ -173,15 +174,16 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
     auto reflector_normal_scaled = (r_dir_inverse * normal) * normal;
     auto new_dir = 2 * reflector_normal_scaled - r_dir_inverse;
     out_r = Ray::from_offset_and_direction(
-      incoming.at(incident_k) + normal * Ruler::epsilon(), new_dir);
+        incoming.at(out_incident_k) + normal * Ruler::epsilon(), new_dir);
     return true;
   };
 
   constexpr double ratio0 = 1.0 / _relative_refractive_index;
   constexpr double ratio1 = _relative_refractive_index;
   Ray r0, r1;
-  if (!refract_ray(incoming, ratio0, false, r0) ||
-      !refract_ray(r0, ratio1, true, r1))
+  double second_incident_k;
+  if (!refract_ray(incoming, ratio0, false, r0, out_k) ||
+      !refract_ray(r0, ratio1, true, r1, second_incident_k))
     return false;
 
   nesting++;
