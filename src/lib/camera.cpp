@@ -61,7 +61,7 @@ Camera::Camera(double focal_length, unsigned screen_width_px,
       _screen_height_px(screen_height_px),
       _screen_resolution(screen_resolution), _focus_position(pos) {}
 
-Bitmap Camera::snap(Scene &scene) {
+Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
   Context ctx(scene.object_count());
   scene.init_object_ids(ctx);
@@ -86,28 +86,26 @@ Bitmap Camera::snap(Scene &scene) {
   std::vector<ThreadTask<RenderFnTy>> subtasks;
   std::vector<std::thread> threads;
 
-  const int total_threads = 15;
-
   int x_begin = -(_screen_width_px / 2);
-  int x_delta = _screen_width_px / total_threads;
+  int x_delta = _screen_width_px / thread_count;
 
-  for (int i = 0; i < total_threads; i++) {
+  for (int i = 0; i < thread_count; i++) {
     int x_end =
-        i == (total_threads - 1) ? (_screen_width_px / 2) : (x_begin + x_delta);
+        i == (thread_count - 1) ? (_screen_width_px / 2) : (x_begin + x_delta);
     ThreadTask<RenderFnTy>::Point p0(x_begin, -(_screen_height_px / 2));
     ThreadTask<RenderFnTy>::Point p1(x_end, (_screen_height_px / 2));
     subtasks.emplace_back(p0, p1, render_one_pixel);
     x_begin = x_end;
   }
 
-  for (int i = 0; i < total_threads; i++) {
+  for (int i = 0; i < thread_count; i++) {
     auto *task = &subtasks[i];
     threads.emplace_back([task]() { task->do_threaded_work(); });
   }
 
   int x_bmp_delta = _screen_width_px / 2, y_bmp_delta = _screen_height_px / 2;
 
-  for (int i = 0; i < total_threads; i++) {
+  for (int i = 0; i < thread_count; i++) {
     threads[i].join();
     subtasks[i].drain_work(
         [&bmp, x_bmp_delta, y_bmp_delta](int x, int y, const Color &c) {

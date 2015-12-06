@@ -22,7 +22,7 @@ public:
                   unsigned screen_height_px, unsigned screen_resolution,
                   const Vector &pos);
 
-  Bitmap snap(Scene &s);
+  Bitmap snap(Scene &s, unsigned thread_count = 12);
 };
 }
 
