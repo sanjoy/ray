@@ -31,7 +31,7 @@ static void create_cube_faces(const Vector &center, const Vector &normal_a,
       pts[1] = pt_in_plane - axis_0 + axis_1;
       pts[2] = pt_in_plane - axis_0 - axis_1;
 
-      if (sign == 1)
+      if (sign == -1)
         std::reverse(pts.begin(), pts.end());
 
       RectanglePlaneSegment rps(pts);
@@ -147,16 +147,12 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
     return false;
 
   auto refract_ray = [&](const Ray &r, const double refract_ratio,
-                         bool invert_face_normals, Ray &out_r,
-                         double &out_incident_k) {
+                         Ray &out_r, double &out_incident_k) {
     unsigned incident_idx;
     if (!intersect_faces<FACE_COUNT>(faces(), r, out_incident_k, incident_idx))
       return false;
 
-    Vector normal = faces()[incident_idx].normal();
-    if (invert_face_normals)
-      normal = normal * (-1.0);
-
+    const Vector &normal = faces()[incident_idx].normal();
     double cos_of_incoming = r.direction().normalize() * normal;
 
     double sin_sqr_theta_t =
@@ -185,8 +181,8 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
   constexpr double ratio1 = _relative_refractive_index;
   Ray r0, r1;
   double second_incident_k;
-  if (!refract_ray(incoming, ratio0, false, r0, out_k) ||
-      !refract_ray(r0, ratio1, true, r1, second_incident_k))
+  if (!refract_ray(incoming, ratio0, r0, out_k) ||
+      !refract_ray(r0, ratio1, r1, second_incident_k))
     return false;
 
   nesting++;
