@@ -1,20 +1,19 @@
 #ifndef RAY_SCENE_GENERATORS_HPP
 #define RAY_SCENE_GENERATORS_HPP
 
-#define SCENE_GENERATOR_DO(F)                                                  \
-  F("basic", basic)                                                            \
-  F("sphere", sphere)                                                          \
-  F("refraction", refraction)
+#include "camera.hpp"
+#include "scene.hpp"
+
+#include <functional>
 
 namespace ray {
-namespace generator {
 
-#define DECL_FN(str_name, name) Camera generate_##name##_scene(Scene &);
+typedef std::function<Camera(Scene &)> SceneGeneratorTy;
+SceneGeneratorTy get_scene_generator_by_name(const char *);
 
-SCENE_GENERATOR_DO(DECL_FN)
+typedef std::function<void(const char *, SceneGeneratorTy)> SceneGenCallbackTy;
+void for_each_scene_generator(SceneGenCallbackTy);
 
-#undef DECL_FN
-}
 }
 
 #endif

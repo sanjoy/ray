@@ -11,11 +11,11 @@ using namespace ray;
 using namespace std;
 
 static void print_usage() {
-  printf("usage: driver scene-name\n");
+  printf("usage: ./render scene-name\n");
   printf("scene names:\n");
-#define PRINT_SCENE_NAME(str_name, name) printf("  %s\n", str_name);
-  SCENE_GENERATOR_DO(PRINT_SCENE_NAME);
-#undef PRINT_SCENE_NAME
+  for_each_scene_generator([&](const char *sg_name, SceneGeneratorTy) {
+      printf("  %s\n", sg_name);
+    });
 }
 
 static void do_scene(std::function<Camera(Scene &s)> scene_gen) {
@@ -30,17 +30,10 @@ static void do_scene(std::function<Camera(Scene &s)> scene_gen) {
 }
 
 static void do_scene(const char *scene_name) {
-  Scene s;
-
-#define GEN_SCENE(str_name, name)                                              \
-  if (!strcmp(str_name, scene_name)) {                                         \
-    do_scene(ray::generator::generate_##name##_scene);                         \
-    return;                                                                    \
+  if (auto sg = get_scene_generator_by_name(scene_name)) {
+    do_scene(sg);
+    return;
   }
-
-  SCENE_GENERATOR_DO(GEN_SCENE);
-
-#undef GEN_SCENE
 
   printf("unknown scene: \"%s\"\n", scene_name);
   print_usage();

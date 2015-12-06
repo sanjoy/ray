@@ -1,3 +1,3 @@
 add_subdirectory(lib)
-add_subdirectory(scenes)
+add_subdirectory(utils)
 add_subdirectory(tests)
