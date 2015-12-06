@@ -15,7 +15,7 @@ class Camera {
   // How many pixels fit in one unit length?
   const unsigned _screen_resolution;
 
-  const Vector &_focus_position;
+  const Vector _focus_position;
 
 public:
   explicit Camera(double focal_length, unsigned screen_width_px,

@@ -19,19 +19,23 @@ public:
     int y() const { return _y; }
   };
 
-  explicit ThreadTask(Point top_left, Point bottom_right, RenderFnTy &render_fn)
+  explicit ThreadTask(Point top_left, Point bottom_right, RenderFnTy &render_fn,
+                      Scene &s)
       : _top_left(top_left), _bottom_right(bottom_right),
-        _render_fn(render_fn) {
+        _render_fn(render_fn), _ctx(s.object_count()) {
     _result.reset(new Color[(bottom_right.x() - top_left.x()) *
                             (bottom_right.y() - top_left.y())]);
+    s.init_object_ids(_ctx);
   }
 
   void do_threaded_work() {
     auto &render_fn = _render_fn;
     for (int xi = _top_left.x(), xe = _bottom_right.x(); xi != xe; ++xi)
       for (int yi = _top_left.y(), ye = _bottom_right.y(); yi != ye; ++yi)
-        at(xi, yi) = render_fn(xi, yi);
+        at(xi, yi) = render_fn(xi, yi, _ctx);
   }
+
+  Context context() { return _ctx; }
 
   template <typename DrainFnTy> void drain_work(const DrainFnTy &drain_fn) {
     for (int xi = _top_left.x(), xe = _bottom_right.x(); xi != xe; ++xi)
@@ -43,6 +47,7 @@ private:
   Point _top_left;
   Point _bottom_right;
   RenderFnTy &_render_fn;
+  Context _ctx;
   std::unique_ptr<Color[]> _result;
 
   Color &at(int x, int y) {
@@ -63,8 +68,6 @@ Camera::Camera(double focal_length, unsigned screen_width_px,
 
 Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
-  Context ctx(scene.object_count());
-  scene.init_object_ids(ctx);
 
   double max_diag_square =
     std::pow(_screen_height_px / 2, 2) + std::pow(_screen_width_px / 2, 2);
@@ -73,7 +76,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   unsigned resolution = _screen_resolution;
   auto focus = _focus_position;
 
-  auto render_one_pixel = [&](int x, int y) {
+  auto render_one_pixel = [&](int x, int y, Context &ctx) {
     double scale = 1.0 + (x * x + y * y) / max_diag_square;
     const Vector sample_pt(focal_length, (x * scale) / resolution,
                            (y * scale) / resolution);
@@ -94,7 +97,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
         i == (thread_count - 1) ? (_screen_width_px / 2) : (x_begin + x_delta);
     ThreadTask<RenderFnTy>::Point p0(x_begin, -(_screen_height_px / 2));
     ThreadTask<RenderFnTy>::Point p1(x_end, (_screen_height_px / 2));
-    subtasks.emplace_back(p0, p1, render_one_pixel);
+    subtasks.emplace_back(p0, p1, render_one_pixel, scene);
     x_begin = x_end;
   }
 
