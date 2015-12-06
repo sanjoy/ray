@@ -28,8 +28,11 @@ static void create_cube_faces(const Vector &center, const Vector &normal_a,
 
       std::array<Vector, 3> pts;
       pts[0] = pt_in_plane + axis_0 + axis_1;
-      pts[1] = pt_in_plane + axis_0 - axis_1;
+      pts[1] = pt_in_plane - axis_0 + axis_1;
       pts[2] = pt_in_plane - axis_0 - axis_1;
+
+      if (sign == 1)
+        std::reverse(pts.begin(), pts.end());
 
       RectanglePlaneSegment rps(pts);
       if (sign == -1)

@@ -30,15 +30,14 @@ int main(int argc, char **argv) {
       Vector position = Vector::get_i() * 3500 +
                         Vector::get_j() * 1500 * (i - 4) +
                         Vector::get_k() * 1200 * ((i % 4) - 2);
-      unique_ptr<BoxObj> box(
-          new BoxObj(position, init_normal_a, init_normal_b, 200.0));
-      s.add_object(std::move(box));
+      s.add_object(
+          make_unique<BoxObj>(position, init_normal_a, init_normal_b, 200.0));
 
       init_normal_a = init_normal_a.rotate(0.3, init_normal_b);
       init_normal_b = init_normal_b.rotate(1.3, init_normal_a);
     }
 
-    s.add_object(std::unique_ptr<SkyObj>(new SkyObj));
+    s.add_object(make_unique<SkyObj>());
 
     auto sphere_pos_a = Vector::get_i() * 4500 + Vector::get_j() * 2000 +
                         Vector::get_k() * 2000;
@@ -48,14 +47,9 @@ int main(int argc, char **argv) {
 
     auto sphere_pos_c = Vector::get_i() * 3500;
 
-    s.add_object(unique_ptr<SphericalMirrorObj>(
-        new SphericalMirrorObj(sphere_pos_a, 600)));
-
-    s.add_object(unique_ptr<SphericalMirrorObj>(
-        new SphericalMirrorObj(sphere_pos_b, 600)));
-
-    s.add_object(unique_ptr<SphericalMirrorObj>(
-        new SphericalMirrorObj(sphere_pos_c, 600)));
+    s.add_object(make_unique<SphericalMirrorObj>(sphere_pos_a, 600));
+    s.add_object(make_unique<SphericalMirrorObj>(sphere_pos_b, 600));
+    s.add_object(make_unique<SphericalMirrorObj>(sphere_pos_c, 600));
 
     Camera c(s, 6.0, 5000, 2500, 200, ray::Vector());
     Bitmap bmp = c.snap();

@@ -3,6 +3,7 @@
 
 #include "object.hpp"
 #include "context.hpp"
+#include "support.hpp"
 
 #include <memory>
 #include <vector>
