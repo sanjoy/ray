@@ -1,5 +1,6 @@
 #include "objects.hpp"
 
+#include "newton.hpp"
 #include "scene.hpp"
 
 #include <cmath>
@@ -134,13 +135,8 @@ bool SphericalMirrorObj::incident(Context &ctx, const Scene &scene,
 
   if (_sphere.intersect(incoming, out_k) && out_k >= 0.0) {
     auto touch_pt = incoming.at(out_k);
-    auto reflector_normal = (touch_pt - _sphere.center()).normalize();
-    auto incoming_dir_inverse = (-incoming.direction()).normalize();
-    auto reflector_normal_scaled =
-        (incoming_dir_inverse * reflector_normal) * reflector_normal;
-    auto new_dir = 2 * reflector_normal_scaled - incoming_dir_inverse;
-    auto new_ray = Ray::from_offset_and_direction(
-        touch_pt + reflector_normal * Ruler::epsilon(), new_dir);
+    auto normal = (touch_pt - _sphere.center()).normalize();
+    auto new_ray = get_reflected_ray(incoming, touch_pt, normal);
 
     nesting++;
     out_c = scene.render_pixel(new_ray, ctx) * 0.8;
