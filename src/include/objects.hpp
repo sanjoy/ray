@@ -43,6 +43,24 @@ public:
                         Color &) const override;
 };
 
+class InfinitePlane : public Object {
+  Plane _plane;
+  double _check_size;
+  Vector _axis_0, _axis_1;
+
+public:
+  InfinitePlane(Plane plane, Vector axis_0, double check_size) :
+    _plane(plane), _check_size(check_size),
+    _axis_0(axis_0), _axis_1(axis_0.cross_product(plane.normal())) {
+
+    _axis_0 = _axis_0.normalize();
+    _axis_1 = _axis_1.normalize();
+  }
+
+  virtual bool incident(Context &, const Scene &, const Ray &, double, double &,
+                        Color &) const override;
+};
+
 class RefractiveBoxObj : public Object {
   static constexpr unsigned FACE_COUNT = 6;
   std::array<RectanglePlaneSegment, FACE_COUNT> _faces;

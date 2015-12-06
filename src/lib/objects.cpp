@@ -108,6 +108,23 @@ bool SkyObj::incident(Context &, const Scene &, const Ray &incoming,
   return true;
 }
 
+bool InfinitePlane::incident(Context &, const Scene &, const Ray &incoming,
+                             double current_best_k, double &out_k,
+                             Color &out_c) const {
+  if (!_plane.intersect(incoming, out_k) || out_k > current_best_k)
+    return false;
+
+  Vector pt = incoming.at(out_k);
+  int comp_0 = int((pt * _axis_0) / _check_size);
+  int comp_1 = int((pt * _axis_1) / _check_size);
+
+  if (((comp_0 % 2) ^ (comp_1 % 2)))
+    out_c = Color::create_white();
+  else
+    out_c = Color::create_black();
+  return true;
+}
+
 bool SphericalMirrorObj::incident(Context &ctx, const Scene &scene,
                                   const Ray &incoming, double current_best_k,
                                   double &out_k, Color &out_c) const {

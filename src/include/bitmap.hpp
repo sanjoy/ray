@@ -35,6 +35,17 @@ public:
   static Color create_blue() { return Color(0, 0, 255); }
 };
 
+inline Color operator+(const Color &c0, const Color &c1) {
+  auto clamp = [](uint16_t x) {
+    if (x > 255) return uint8_t(255);
+    return uint8_t(x);
+  };
+
+  return Color(clamp(uint16_t(c0.red()) + uint16_t(c1.red())),
+               clamp(uint16_t(c0.green()) + uint16_t(c1.green())),
+               clamp(uint16_t(c0.blue()) + uint16_t(c1.blue())));
+}
+
 class Bitmap {
   unsigned _height;
   unsigned _width;
