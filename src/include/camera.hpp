@@ -7,8 +7,6 @@
 namespace ray {
 
 class Camera {
-  const Scene &_scene;
-
   const double _focal_length;
 
   const unsigned _screen_width_px;
@@ -20,11 +18,11 @@ class Camera {
   const Vector &_focus_position;
 
 public:
-  explicit Camera(const Scene &s, double focal_length, unsigned screen_width_px,
+  explicit Camera(double focal_length, unsigned screen_width_px,
                   unsigned screen_height_px, unsigned screen_resolution,
                   const Vector &pos);
 
-  Bitmap snap();
+  Bitmap snap(Scene &s);
 };
 }
 

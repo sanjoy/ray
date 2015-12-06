@@ -2,6 +2,7 @@
 #define RAY_SCENE_HPP
 
 #include "object.hpp"
+#include "camera.hpp"
 #include "context.hpp"
 #include "support.hpp"
 

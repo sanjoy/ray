@@ -54,22 +54,21 @@ private:
   }
 };
 
-Camera::Camera(const Scene &s, double focal_length, unsigned screen_width_px,
+Camera::Camera(double focal_length, unsigned screen_width_px,
                unsigned screen_height_px, unsigned screen_resolution,
                const Vector &pos)
-    : _scene(s), _focal_length(focal_length), _screen_width_px(screen_width_px),
+    : _focal_length(focal_length), _screen_width_px(screen_width_px),
       _screen_height_px(screen_height_px),
       _screen_resolution(screen_resolution), _focus_position(pos) {}
 
-Bitmap Camera::snap() {
+Bitmap Camera::snap(Scene &scene) {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
-  Context ctx(_scene.object_count());
-  _scene.init_object_ids(ctx);
+  Context ctx(scene.object_count());
+  scene.init_object_ids(ctx);
 
   double max_diag_square =
     std::pow(_screen_height_px / 2, 2) + std::pow(_screen_width_px / 2, 2);
 
-  auto &scene = _scene;
   double focal_length = _focal_length;
   unsigned resolution = _screen_resolution;
   auto focus = _focus_position;
