@@ -12,7 +12,7 @@
 using namespace ray;
 using namespace std;
 
-Camera ray::generator::generate_refract_scene(Scene &s) {
+Camera ray::generator::generate_refraction_scene(Scene &s) {
   Vector init_normal_a =
       Vector::get_i() +
       (1.0 / std::sqrt(2)) * (Vector::get_k() + Vector::get_j());

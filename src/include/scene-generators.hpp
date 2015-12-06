@@ -4,7 +4,7 @@
 #define SCENE_GENERATOR_DO(F)                                                  \
   F("basic", basic)                                                            \
   F("sphere", sphere)                                                          \
-  F("refract", refract)
+  F("refraction", refraction)
 
 namespace ray {
 namespace generator {
