@@ -14,9 +14,10 @@ inline Ray get_reflected_ray(const Ray &r, const Vector &pt,
     Ray::from_offset_and_direction(pt + normal * Ruler::epsilon(), new_dir);
 }
 
-inline Ray get_refracted_ray(const Ray &r, const Vector &pt,
-                             const Vector &normal, double refractive_index,
+inline Ray get_refracted_ray(const Ray &r, double k, Vector normal,
+                             double refractive_index,
                              bool &out_total_internal_reflection) {
+  normal = normal.normalize();
   double cos_of_incoming = r.direction().normalize() * normal;
 
   double sin_sqr_theta_t =
@@ -28,17 +29,13 @@ inline Ray get_refracted_ray(const Ray &r, const Vector &pt,
     double normal_factor = refractive_index * cos_of_incoming - std::sqrt(disc);
     Vector new_dir = refractive_index * r.direction() + normal * normal_factor;
 
-    return Ray::from_offset_and_direction(pt, new_dir);
+    return Ray::from_offset_and_direction(r.at(k) - (normal * Ruler::epsilon()),
+                                          new_dir);
   }
 
   // Total internal reflection
   out_total_internal_reflection = true;
-
-  auto r_dir_inverse = (-r.direction()).normalize();
-  auto reflector_normal_scaled = (r_dir_inverse * normal) * normal;
-  auto new_dir = 2 * reflector_normal_scaled - r_dir_inverse;
-  return
-    Ray::from_offset_and_direction(pt + normal * Ruler::epsilon(), new_dir);
+  return get_reflected_ray(r, r.at(k), normal);
 }
 
 }
