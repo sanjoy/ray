@@ -75,11 +75,10 @@ static Camera generate_sphere_scene(Scene &s) {
 }
 
 static Camera generate_refraction_scene(Scene &s) {
-  Plane plane(-Vector::get_i(), Vector::get_i() * 250);
-  s.add_object(make_unique<InfinitePlane>(plane, Vector::get_j(), 150));
+  Plane plane(-Vector::get_i(), Vector::get_i() * 1500);
+  s.add_object(make_unique<InfinitePlane>(plane, Vector::get_j(), 500));
 
-  auto refractive_pos_a =
-      Vector::get_i() * 150 - Vector::get_k() * 15 + Vector::get_j() * 50;
+  auto refractive_pos_a = Vector::get_i() * 100;
 
   Vector init_normal_a =
       Vector::get_i() +
@@ -88,8 +87,6 @@ static Camera generate_refraction_scene(Scene &s) {
   Vector init_normal_b =
       Vector::get_i() -
       (1.0 / std::sqrt(2)) * (Vector::get_k() + Vector::get_j());
-
-  init_normal_a = init_normal_a.rotate(0.1, init_normal_b);
 
   s.add_object(make_unique<RefractiveBoxObj>(refractive_pos_a, init_normal_a,
                                              init_normal_b, 50.0));
