@@ -45,7 +45,7 @@ static void do_scene(const char *scene_name, unsigned thread_count) {
 struct Arguments {
   std::string scene_name;
   std::string exec_name;
-  unsigned thread_count;
+  unsigned thread_count = 12;
 };
 
 static bool parse_args(Arguments &args, int argc, char **argv) {
