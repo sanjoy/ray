@@ -24,7 +24,7 @@ struct Ruler {
   }
 
   static double epsilon() {
-    return std::numeric_limits<double>::round_error() * 750;
+    return 1E-55;
   }
 };
 
