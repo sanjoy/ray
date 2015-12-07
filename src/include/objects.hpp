@@ -64,7 +64,7 @@ public:
 class RefractiveBoxObj : public Object {
   static constexpr unsigned FACE_COUNT = 6;
   std::array<RectanglePlaneSegment, FACE_COUNT> _faces;
-  static constexpr double _relative_refractive_index = 1.5;
+  static constexpr double _relative_refractive_index = 1.3;
 
   static constexpr unsigned _max_nesting = 10;
   static unsigned max_nesting() { return RefractiveBoxObj::_max_nesting; }
