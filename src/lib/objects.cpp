@@ -159,47 +159,32 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
   if (nesting >= RefractiveBoxObj::max_nesting())
     return false;
 
-  auto refract_ray = [&](const Ray &r, const double refract_ratio,
-                         Ray &out_r, double &out_incident_k) {
-    unsigned incident_idx;
-    if (!intersect_faces<FACE_COUNT>(faces(), r, out_incident_k, incident_idx))
-      return false;
-
-    const Vector &normal = faces()[incident_idx].normal();
-    double cos_of_incoming = r.direction().normalize() * normal;
-
-    double sin_sqr_theta_t =
-      std::pow(refract_ratio, 2) * (1 - std::pow(cos_of_incoming, 2));
-    double disc = 1 - sin_sqr_theta_t;
-    if (disc >= 0.0) {
-      // Refraction
-      double normal_factor = refract_ratio * cos_of_incoming - std::sqrt(disc);
-      Vector new_dir = refract_ratio * r.direction() + normal * normal_factor;
-
-      out_r =
-          Ray::from_offset_and_direction(incoming.at(out_incident_k), new_dir);
-      return true;
-    }
-
-    // Total internal reflection
-    auto r_dir_inverse = (-r.direction()).normalize();
-    auto reflector_normal_scaled = (r_dir_inverse * normal) * normal;
-    auto new_dir = 2 * reflector_normal_scaled - r_dir_inverse;
-    out_r = Ray::from_offset_and_direction(
-        incoming.at(out_incident_k) + normal * Ruler::epsilon(), new_dir);
-    return true;
-  };
-
-  constexpr double ratio0 = 1.0 / _relative_refractive_index;
-  constexpr double ratio1 = _relative_refractive_index;
-  Ray r0, r1;
-  double second_incident_k;
-  if (!refract_ray(incoming, ratio0, r0, out_k) ||
-      !refract_ray(r0, ratio1, r1, second_incident_k))
+  unsigned incident_idx;
+  if (!intersect_faces<FACE_COUNT>(faces(), incoming, out_k, incident_idx))
     return false;
 
+  auto r_i = incoming;
+  double k = out_k;
+  const double ratio0 = 1.0 / _relative_refractive_index;
+  const double ratio1 = _relative_refractive_index;
+
+  bool is_tir;
+  r_i = get_refracted_ray(r_i, k, faces()[incident_idx].normal(),
+                          ratio0, is_tir);
+
+  for (int i = 0; i < 30; i++) {
+    if (!intersect_faces<FACE_COUNT>(faces(), r_i, k, incident_idx))
+      return false;
+
+    const Vector normal = -faces()[incident_idx].normal();
+    r_i = get_refracted_ray(r_i, k, normal, ratio1, is_tir);
+    if (!is_tir) break;
+  }
+
+  if (is_tir) return false;
+
   nesting++;
-  out_c = scene.render_pixel(r1, ctx) * 0.9;
+  out_c = scene.render_pixel(r_i, ctx) * 0.9;
   nesting--;
   return true;
 }

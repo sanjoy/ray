@@ -76,7 +76,8 @@ static Camera generate_sphere_scene(Scene &s) {
 
 static Camera generate_refraction_scene(Scene &s) {
   Plane plane(-Vector::get_i(), Vector::get_i() * 1500);
-  s.add_object(make_unique<InfinitePlane>(plane, Vector::get_j(), 500));
+  // s.add_object(make_unique<InfinitePlane>(plane, Vector::get_j(), 500));
+  s.add_object(make_unique<SkyObj>());
 
   auto refractive_pos_a = Vector::get_i() * 100;
 
