@@ -32,6 +32,7 @@ class Vector {
   double _i = 0.0;
   double _j = 0.0;
   double _k = 0.0;
+  bool _is_normal = false;
 
 public:
   Vector() {}
@@ -111,7 +112,12 @@ public:
 
   Vector normalize() const {
     assert(!Ruler::is_zero(mag()) && "Cannot normalize a zero vector!");
-    return (*this) * (1.0 / mag());
+    if (_is_normal)
+      return *this;
+
+    auto result =  (*this) * (1.0 / mag());
+    result._is_normal = true;
+    return result;
   }
 
   Vector rotate(double radian, const Vector &orth) {
