@@ -65,8 +65,8 @@ static bool intersect_faces(const std::array<RectanglePlaneSegment, N> &faces,
   return true;
 }
 
-BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
-               const Vector &normal_b, double side) {
+BoxObj::BoxObj(const Scene &s, const Vector &center, const Vector &normal_a,
+               const Vector &normal_b, double side) : Object(s) {
 
   create_cube_faces(center, normal_a, normal_b, side, _faces);
 
@@ -79,9 +79,8 @@ BoxObj::BoxObj(const Vector &center, const Vector &normal_a,
   _colors[5] = Color(71, 0, 71);
 }
 
-bool BoxObj::incident(Context &, const Scene &, const Ray &incoming,
-                      double current_best_k, double &out_k,
-                      Color &out_c) const {
+bool BoxObj::incident(Context &, const Ray &incoming, double current_best_k,
+		      double &out_k, Color &out_c) const {
   unsigned idx;
   if (intersect_faces<FACE_COUNT>(_faces, incoming, out_k, idx)) {
     out_c = _colors[idx];
@@ -91,7 +90,7 @@ bool BoxObj::incident(Context &, const Scene &, const Ray &incoming,
   return false;
 }
 
-bool SkyObj::incident(Context &, const Scene &, const Ray &incoming,
+bool SkyObj::incident(Context &, const Ray &incoming,
                       double current_best_k, double &out_k,
                       Color &out_c) const {
   if (current_best_k < std::numeric_limits<double>::max())
@@ -109,9 +108,8 @@ bool SkyObj::incident(Context &, const Scene &, const Ray &incoming,
   return true;
 }
 
-bool InfinitePlane::incident(Context &, const Scene &, const Ray &incoming,
-                             double current_best_k, double &out_k,
-                             Color &out_c) const {
+bool InfinitePlane::incident(Context &, const Ray &incoming, double current_best_k,
+			     double &out_k, Color &out_c) const {
   if (!_plane.intersect(incoming, out_k) || out_k > current_best_k)
     return false;
 
@@ -126,8 +124,7 @@ bool InfinitePlane::incident(Context &, const Scene &, const Ray &incoming,
   return true;
 }
 
-bool SphericalMirrorObj::incident(Context &ctx, const Scene &scene,
-                                  const Ray &incoming, double current_best_k,
+bool SphericalMirrorObj::incident(Context &ctx, const Ray &incoming, double current_best_k,
                                   double &out_k, Color &out_c) const {
   intptr_t &nesting = ctx.get(object_id());
   if (nesting >= SphericalMirrorObj::max_nesting())
@@ -139,7 +136,7 @@ bool SphericalMirrorObj::incident(Context &ctx, const Scene &scene,
     auto new_ray = get_reflected_ray(incoming, touch_pt, normal);
 
     nesting++;
-    out_c = scene.render_pixel(new_ray, ctx) * 0.8;
+    out_c = container().render_pixel(new_ray, ctx) * 0.8;
     nesting--;
     return true;
   }
@@ -147,13 +144,13 @@ bool SphericalMirrorObj::incident(Context &ctx, const Scene &scene,
   return false;
 }
 
-RefractiveBoxObj::RefractiveBoxObj(const Vector &center, const Vector &normal_a,
-                                   const Vector &normal_b, double side) {
+RefractiveBoxObj::RefractiveBoxObj(const Scene &s, const Vector &center,
+                                   const Vector &normal_a,
+                                   const Vector &normal_b, double side) : Object(s) {
   create_cube_faces(center, normal_a, normal_b, side, _faces);
 }
 
-bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
-                                const Ray &incoming, double current_best_k,
+bool RefractiveBoxObj::incident(Context &ctx, const Ray &incoming, double current_best_k,
                                 double &out_k, Color &out_c) const {
   intptr_t &nesting = ctx.get(object_id());
   if (nesting >= RefractiveBoxObj::max_nesting())
@@ -184,7 +181,7 @@ bool RefractiveBoxObj::incident(Context &ctx, const Scene &scene,
   if (is_tir) return false;
 
   nesting++;
-  out_c = scene.render_pixel(r_i, ctx) * 0.9;
+  out_c = container().render_pixel(r_i, ctx) * 0.9;
   nesting--;
   return true;
 }

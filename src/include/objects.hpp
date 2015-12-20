@@ -11,9 +11,9 @@ namespace ray {
 class BoxObj : public Object {
 public:
   static constexpr unsigned FACE_COUNT = 6;
-  BoxObj(const Vector &center, const Vector &normal_a, const Vector &normal_b,
+  BoxObj(const Scene &scene, const Vector &center, const Vector &normal_a, const Vector &normal_b,
          double side);
-  virtual bool incident(Context &, const Scene &, const Ray &, double, double &,
+  virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
 
 private:
@@ -27,19 +27,18 @@ class SphericalMirrorObj : public Object {
   static unsigned max_nesting() { return SphericalMirrorObj::_max_nesting; }
 
 public:
-  SphericalMirrorObj(const Vector &center, double radius)
-      : _sphere(center, radius) {}
-  virtual bool incident(Context &, const Scene &, const Ray &, double, double &,
-                        Color &) const override;
+  SphericalMirrorObj(const Scene &scene, const Vector &center, double radius)
+      : Object(scene), _sphere(center, radius) {}
+  virtual bool incident(Context &, const Ray &, double, double &, Color &) const override;
 };
 
 class SkyObj : public Object {
   bool _uniform = false;
 
 public:
-  SkyObj(bool uniform = false) : _uniform(uniform) {}
+  SkyObj(const Scene &scene, bool uniform = false) : Object(scene), _uniform(uniform) {}
 
-  virtual bool incident(Context &, const Scene &, const Ray &, double, double &,
+  virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
 };
 
@@ -49,15 +48,15 @@ class InfinitePlane : public Object {
   Vector _axis_0, _axis_1;
 
 public:
-  InfinitePlane(Plane plane, Vector axis_0, double check_size) :
-    _plane(plane), _check_size(check_size),
+  InfinitePlane(const Scene &scene, Plane plane, Vector axis_0, double check_size) :
+    Object(scene), _plane(plane), _check_size(check_size),
     _axis_0(axis_0), _axis_1(axis_0.cross_product(plane.normal())) {
 
     _axis_0 = _axis_0.normalize();
     _axis_1 = _axis_1.normalize();
   }
 
-  virtual bool incident(Context &, const Scene &, const Ray &, double, double &,
+  virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
 };
 
@@ -70,9 +69,9 @@ class RefractiveBoxObj : public Object {
   static unsigned max_nesting() { return RefractiveBoxObj::_max_nesting; }
 
 public:
-  RefractiveBoxObj(const Vector &center, const Vector &normal_a,
+  RefractiveBoxObj(const Scene &scene, const Vector &center, const Vector &normal_a,
                    const Vector &normal_b, double side);
-  virtual bool incident(Context &, const Scene &, const Ray &, double, double &,
+  virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
 
   const std::array<RectanglePlaneSegment, FACE_COUNT> &faces() const {
