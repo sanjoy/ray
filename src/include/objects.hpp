@@ -9,16 +9,14 @@
 namespace ray {
 
 class BoxObj : public Object {
+  Cube _cube;
+  std::array<Color, Cube::kFaceCount> _colors;
+
 public:
-  static constexpr unsigned FACE_COUNT = 6;
   BoxObj(const Scene &scene, const Vector &center, const Vector &normal_a,
          const Vector &normal_b, double side);
   virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
-
-private:
-  Cube _cube;
-  std::array<Color, FACE_COUNT> _colors;
 };
 
 class SphericalMirrorObj : public Object {

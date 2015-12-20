@@ -349,11 +349,13 @@ public:
 
   const FacesTy &faces() const { return _faces; }
 
+  static const int kFaceCount = 6;
+
   bool intersect(const Ray &r, double &out_k, unsigned &face_idx) const {
     double smallest_k = std::numeric_limits<double>::infinity();
     face_idx = -1;
 
-    for (unsigned i = 0; i < 6; i++) {
+    for (unsigned i = 0; i < kFaceCount; i++) {
       double k;
       if (_faces[i].intersect(r, k) && k < smallest_k) {
         smallest_k = k;
