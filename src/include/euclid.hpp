@@ -198,6 +198,7 @@ class Plane {
 
 public:
   Plane() {}
+
   explicit Plane(const Vector &norm, const Vector &p)
       : _normal(norm), _point(p) {}
 
@@ -225,54 +226,6 @@ public:
   }
 };
 
-// Finite convex segment of a plane
-// Note: this current implemention of this is buggy.
-class ConvexPlaneSegment {
-  Plane _container;
-  std::vector<Vector> _points;
-
-public:
-  ConvexPlaneSegment() {}
-  explicit ConvexPlaneSegment(const Plane &ctr, const std::vector<Vector> &&pts)
-      : _container(ctr), _points(pts) {
-#ifndef NDEBUG
-    for (const Vector &v : points())
-      assert(container().contains(v));
-#endif
-  }
-
-  const Plane &container() const { return _container; }
-  const std::vector<Vector> &points() const { return _points; }
-
-  bool intersect(const Ray &r, double &out) const {
-    if (!container().intersect(r, out))
-      return false;
-
-    unsigned intersect_count = 0;
-
-    Vector intersection_point = r.at(out);
-    if (intersection_point == container().point())
-      return true;
-
-    Ray outgoing_ray =
-        Ray::from_two_points(intersection_point, container().point());
-
-    for (unsigned i = 0, e = points().size(); i != e; ++i) {
-      const Vector &p_from = points()[i];
-      const Vector &p_to = points()[i == (e - 1) ? 0 : (i + 1)];
-
-      double k_boundary, k_ray;
-      Ray r = Ray::from_two_points(p_from, p_to);
-
-      if (r.intersect(outgoing_ray, k_boundary, k_ray) && k_boundary >= 0.0 &&
-          k_boundary < 1.0 && k_ray >= 0.0)
-        intersect_count++;
-    }
-
-    return intersect_count % 2 == 1;
-  }
-};
-
 // Rectangle shaped segment of a plane
 class RectanglePlaneSegment {
   Plane _container;
@@ -283,6 +236,7 @@ class RectanglePlaneSegment {
 
 public:
   RectanglePlaneSegment() {}
+
   explicit RectanglePlaneSegment(const std::array<Vector, 3> &pts)
       : _container(pts), _pts(pts) {
 #ifndef NDEBUG
@@ -329,8 +283,6 @@ class Sphere {
   double _rhs;
 
 public:
-  Sphere() {}
-
   Sphere(const Vector &center, double radius)
       : _center(center), _radius(radius), _center_normal(_center.normalize()) {
     _rhs = center * center - radius * radius;
@@ -358,6 +310,68 @@ public:
     double k2 = (-b - disc) / (2 * a);
 
     out = k1 < k2 ? k1 : k2;
+    return true;
+  }
+};
+
+class Cube {
+  std::array<RectanglePlaneSegment, 6> _faces;
+
+public:
+  explicit Cube(const Vector &center, const Vector &normal_a,
+                const Vector &normal_b, double side) {
+    Vector n_a = normal_a.normalize();
+    Vector n_b = normal_b.normalize();
+    Vector n_c = n_a.cross_product(n_b);
+
+    Vector ns[3] = {n_a, n_b, n_c};
+
+    for (unsigned i = 0; i < 3; i++) {
+      const Vector &axis_0 = ns[(i + 1) % 3] * side;
+      const Vector &axis_1 = ns[(i + 2) % 3] * side;
+
+      assert(Ruler::is_zero(ns[i] * axis_0) && "Expected orthogonal!");
+      assert(Ruler::is_zero(ns[i] * axis_1) && "Expected orthogonal!");
+
+      for (int sign : {-1, 1}) {
+        Vector pt_in_plane = center + sign * ns[i] * side;
+
+        std::array<Vector, 3> pts;
+        pts[0] = pt_in_plane + axis_0 + axis_1;
+        pts[1] = pt_in_plane - axis_0 + axis_1;
+        pts[2] = pt_in_plane - axis_0 - axis_1;
+
+        if (sign == -1)
+          std::reverse(pts.begin(), pts.end());
+
+        RectanglePlaneSegment rps(pts);
+        if (sign == -1)
+          _faces[2 * i] = rps;
+        else
+          _faces[2 * i + 1] = rps;
+      }
+    }
+  }
+
+  const std::array<RectanglePlaneSegment, 6> &faces() const { return _faces; }
+
+  bool intersect(const Ray &r, double &out_k, unsigned &face_idx) const {
+    double smallest_k = std::numeric_limits<double>::infinity();
+    unsigned found_idx = -1;
+
+    for (unsigned i = 0; i < 6; i++) {
+      double k;
+      if (_faces[i].intersect(r, k) && k < smallest_k) {
+        smallest_k = k;
+        face_idx = i;
+      }
+    }
+
+    if (face_idx == -1)
+      return false;
+
+    face_idx = found_idx;
+    out_k = smallest_k;
     return true;
   }
 };

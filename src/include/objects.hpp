@@ -17,7 +17,7 @@ public:
                         Color &) const override;
 
 private:
-  std::array<RectanglePlaneSegment, FACE_COUNT> _faces;
+  Cube _cube;
   std::array<Color, FACE_COUNT> _colors;
 };
 
@@ -70,16 +70,13 @@ class RefractiveBoxObj : public Object {
 
   static constexpr unsigned _max_nesting = 10;
   static unsigned max_nesting() { return RefractiveBoxObj::_max_nesting; }
+  Cube _cube;
 
 public:
   RefractiveBoxObj(const Scene &scene, const Vector &center,
                    const Vector &normal_a, const Vector &normal_b, double side);
   virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
-
-  const std::array<RectanglePlaneSegment, FACE_COUNT> &faces() const {
-    return _faces;
-  }
 };
 }
 
