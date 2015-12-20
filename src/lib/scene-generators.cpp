@@ -23,7 +23,8 @@ static Camera generate_basic_scene(Scene &s) {
     Vector position = Vector::get_i() * 3500 +
                       Vector::get_j() * 1500 * (i - 4) +
                       Vector::get_k() * 1200 * ((i % 4) - 2);
-    s.add_object(make_unique<BoxObj>(s, position, init_normal_a, init_normal_b, 200.0));
+    s.add_object(
+        make_unique<BoxObj>(s, position, init_normal_a, init_normal_b, 200.0));
     init_normal_a = init_normal_a.rotate(0.3, init_normal_b);
     init_normal_b = init_normal_b.rotate(1.3, init_normal_a);
   }
@@ -50,7 +51,7 @@ static Camera generate_sphere_scene(Scene &s) {
                       Vector::get_j() * 1500 * (i - 4) +
                       Vector::get_k() * 1200 * ((i % 4) - 2);
     s.add_object(
-      make_unique<BoxObj>(s, position, init_normal_a, init_normal_b, 200.0));
+        make_unique<BoxObj>(s, position, init_normal_a, init_normal_b, 200.0));
 
     init_normal_a = init_normal_a.rotate(0.3, init_normal_b);
     init_normal_b = init_normal_b.rotate(1.3, init_normal_a);
@@ -104,9 +105,9 @@ SceneGeneratorTy ray::get_scene_generator_by_name(const char *name) {
   SceneGeneratorTy result;
 
   for_each_scene_generator([&](const char *sg_name, SceneGeneratorTy sg) {
-      if (!strcmp(sg_name, name))
-        result = sg;
-    });
+    if (!strcmp(sg_name, name))
+      result = sg;
+  });
 
   return result;
 }

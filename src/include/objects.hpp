@@ -11,8 +11,8 @@ namespace ray {
 class BoxObj : public Object {
 public:
   static constexpr unsigned FACE_COUNT = 6;
-  BoxObj(const Scene &scene, const Vector &center, const Vector &normal_a, const Vector &normal_b,
-         double side);
+  BoxObj(const Scene &scene, const Vector &center, const Vector &normal_a,
+         const Vector &normal_b, double side);
   virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
 
@@ -29,14 +29,16 @@ class SphericalMirrorObj : public Object {
 public:
   SphericalMirrorObj(const Scene &scene, const Vector &center, double radius)
       : Object(scene), _sphere(center, radius) {}
-  virtual bool incident(Context &, const Ray &, double, double &, Color &) const override;
+  virtual bool incident(Context &, const Ray &, double, double &,
+                        Color &) const override;
 };
 
 class SkyObj : public Object {
   bool _uniform = false;
 
 public:
-  SkyObj(const Scene &scene, bool uniform = false) : Object(scene), _uniform(uniform) {}
+  SkyObj(const Scene &scene, bool uniform = false)
+      : Object(scene), _uniform(uniform) {}
 
   virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
@@ -48,9 +50,10 @@ class InfinitePlane : public Object {
   Vector _axis_0, _axis_1;
 
 public:
-  InfinitePlane(const Scene &scene, Plane plane, Vector axis_0, double check_size) :
-    Object(scene), _plane(plane), _check_size(check_size),
-    _axis_0(axis_0), _axis_1(axis_0.cross_product(plane.normal())) {
+  InfinitePlane(const Scene &scene, Plane plane, Vector axis_0,
+                double check_size)
+      : Object(scene), _plane(plane), _check_size(check_size), _axis_0(axis_0),
+        _axis_1(axis_0.cross_product(plane.normal())) {
 
     _axis_0 = _axis_0.normalize();
     _axis_1 = _axis_1.normalize();
@@ -69,8 +72,8 @@ class RefractiveBoxObj : public Object {
   static unsigned max_nesting() { return RefractiveBoxObj::_max_nesting; }
 
 public:
-  RefractiveBoxObj(const Scene &scene, const Vector &center, const Vector &normal_a,
-                   const Vector &normal_b, double side);
+  RefractiveBoxObj(const Scene &scene, const Vector &center,
+                   const Vector &normal_a, const Vector &normal_b, double side);
   virtual bool incident(Context &, const Ray &, double, double &,
                         Color &) const override;
 

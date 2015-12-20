@@ -16,8 +16,8 @@ static void print_usage() {
   printf_cr("  thread-count has to be a positive integer in [1, 1024)");
   printf_cr("scene names:");
   for_each_scene_generator([&](const char *sg_name, SceneGeneratorTy) {
-      printf_cr("  %s", sg_name);
-    });
+    printf_cr("  %s", sg_name);
+  });
 }
 
 static void do_scene(std::function<Camera(Scene &s)> scene_gen,
@@ -70,8 +70,8 @@ static bool parse_args(Arguments &args, int argc, char **argv) {
 
         char *endptr;
         long val = strtol(thread_count_str, &endptr, 10);
-        if (endptr != &thread_count_str[strlen(thread_count_str)] ||
-            val < 1 || val >= 1024)
+        if (endptr != &thread_count_str[strlen(thread_count_str)] || val < 1 ||
+            val >= 1024)
           return false;
         args.thread_count = val;
       } else {

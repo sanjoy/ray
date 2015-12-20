@@ -37,7 +37,8 @@ public:
 
 inline Color operator+(const Color &c0, const Color &c1) {
   auto clamp = [](uint16_t x) {
-    if (x > 255) return uint8_t(255);
+    if (x > 255)
+      return uint8_t(255);
     return uint8_t(x);
   };
 

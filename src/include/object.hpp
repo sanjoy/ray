@@ -29,7 +29,7 @@ public:
   unsigned object_id() const { return _object_id; }
   void set_object_id(unsigned obj_id) { _object_id = obj_id; }
 
-  const Scene& container() const { return _container; }
+  const Scene &container() const { return _container; }
 
   /// Subclasses extend this method to initialize the object's data in \p ctx.
   virtual void initialize(Context &ctx) const { ctx.get(object_id()) = 0; }

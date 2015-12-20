@@ -23,9 +23,7 @@ struct Ruler {
     return is_zero<op_count>(d0 - d1);
   }
 
-  static double epsilon() {
-    return 1E-55;
-  }
+  static double epsilon() { return 1E-55; }
 };
 
 class Vector {
@@ -115,7 +113,7 @@ public:
     if (_is_normal)
       return *this;
 
-    auto result =  (*this) * (1.0 / mag());
+    auto result = (*this) * (1.0 / mag());
     result._is_normal = true;
     return result;
   }

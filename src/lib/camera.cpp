@@ -21,8 +21,8 @@ public:
 
   explicit ThreadTask(Point top_left, Point bottom_right, RenderFnTy &render_fn,
                       Scene &s)
-      : _top_left(top_left), _bottom_right(bottom_right),
-        _render_fn(render_fn), _ctx(s.object_count()) {
+      : _top_left(top_left), _bottom_right(bottom_right), _render_fn(render_fn),
+        _ctx(s.object_count()) {
     _result.reset(new Color[(bottom_right.x() - top_left.x()) *
                             (bottom_right.y() - top_left.y())]);
     s.init_object_ids(_ctx);
@@ -70,7 +70,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
 
   double max_diag_square =
-    std::pow(_screen_height_px / 2, 2) + std::pow(_screen_width_px / 2, 2);
+      std::pow(_screen_height_px / 2, 2) + std::pow(_screen_width_px / 2, 2);
 
   double focal_length = _focal_length;
   unsigned resolution = _screen_resolution;
