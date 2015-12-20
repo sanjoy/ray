@@ -15,13 +15,9 @@ struct Ruler {
     return fabs(d) < std::numeric_limits<double>::round_error();
   }
 
-  static bool is_negative(double d) {
-    return d < 0.0;
-  }
+  static bool is_negative(double d) { return d < 0.0; }
 
-  static bool is_equal(double d0, double d1) {
-    return is_zero(d0 - d1);
-  }
+  static bool is_equal(double d0, double d1) { return is_zero(d0 - d1); }
 
   static double epsilon() { return 1E-55; }
 };
