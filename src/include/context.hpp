@@ -1,6 +1,8 @@
 #ifndef RAY_CONTEXT_HPP
 #define RAY_CONTEXT_HPP
 
+/// context.hpp: per-thread state.
+
 #include <memory>
 
 namespace ray {

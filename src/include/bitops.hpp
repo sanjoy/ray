@@ -1,6 +1,8 @@
 #ifndef RAY_BITOPS_HPP
 #define RAY_BITOPS_HPP
 
+/// bitops.hpp: bit manipulation helpers.
+
 #include <cstdint>
 
 namespace ray {

@@ -1,6 +1,9 @@
 #ifndef RAY_BITMAP_HPP
 #define RAY_BITMAP_HPP
 
+/// bitmap.hpp: contains helper routines for generating and
+/// serializing a bitmap file.
+
 #include <cassert>
 #include <cstdint>
 #include <memory>

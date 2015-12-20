@@ -8,7 +8,6 @@ Bitmap::Bitmap(unsigned h, unsigned w, Color background)
     : _height(h), _width(w) {
 
   _image = std::unique_ptr<Color[]>(new Color[pixel_count()]);
-
   std::fill(&_image[0], &_image[pixel_count()], background);
 }
 

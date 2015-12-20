@@ -1,7 +1,8 @@
 #ifndef RAY_SCENE_GENERATORS_HPP
 #define RAY_SCENE_GENERATORS_HPP
 
-#include "camera.hpp"
+/// scene-generators.hpp: predefined scene generators.
+
 #include "scene.hpp"
 
 #include <functional>

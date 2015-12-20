@@ -1,6 +1,8 @@
 #ifndef RAY_EUCLID_HPP
 #define RAY_EUCLID_HPP
 
+/// euclid.hpp: geometry utilities.
+
 #include <array>
 #include <cassert>
 #include <cmath>

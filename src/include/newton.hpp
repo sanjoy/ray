@@ -1,6 +1,8 @@
 #ifndef RAY_NEWTON_HPP
 #define RAY_NEWTON_HPP
 
+/// newton.hpp: properties of light.
+
 #include "euclid.hpp"
 
 namespace ray {

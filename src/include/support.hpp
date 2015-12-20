@@ -1,6 +1,8 @@
 #ifndef RAY_SUPPORT_HPP
 #define RAY_SUPPORT_HPP
 
+/// support.hpp: random helpers that don't belong anywhere else.
+
 #include <memory>
 #include <utility>
 

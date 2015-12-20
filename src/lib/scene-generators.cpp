@@ -1,5 +1,4 @@
 #include "bitmap.hpp"
-#include "camera.hpp"
 #include "objects.hpp"
 #include "scene.hpp"
 #include "scene-generators.hpp"
