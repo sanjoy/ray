@@ -357,7 +357,7 @@ public:
 
   bool intersect(const Ray &r, double &out_k, unsigned &face_idx) const {
     double smallest_k = std::numeric_limits<double>::infinity();
-    unsigned found_idx = -1;
+    face_idx = -1;
 
     for (unsigned i = 0; i < 6; i++) {
       double k;
@@ -370,7 +370,6 @@ public:
     if (face_idx == -1)
       return false;
 
-    face_idx = found_idx;
     out_k = smallest_k;
     return true;
   }
