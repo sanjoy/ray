@@ -11,16 +11,16 @@
 namespace ray {
 
 struct Ruler {
-  template <unsigned op_count = 1> static bool is_zero(double d) {
-    return fabs(d) < (op_count * std::numeric_limits<double>::round_error());
+  static bool is_zero(double d) {
+    return fabs(d) < std::numeric_limits<double>::round_error();
   }
 
-  template <unsigned op_count = 1> static bool is_negative(double d) {
+  static bool is_negative(double d) {
     return d < 0.0;
   }
 
-  template <unsigned op_count = 1> static bool is_equal(double d0, double d1) {
-    return is_zero<op_count>(d0 - d1);
+  static bool is_equal(double d0, double d1) {
+    return is_zero(d0 - d1);
   }
 
   static double epsilon() { return 1E-55; }
