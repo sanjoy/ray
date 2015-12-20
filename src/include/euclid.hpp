@@ -193,8 +193,6 @@ class Plane {
   Vector _point;
 
 public:
-  Plane() {}
-
   explicit Plane(const Vector &norm, const Vector &p)
       : _normal(norm), _point(p) {}
 
@@ -231,8 +229,6 @@ class RectanglePlaneSegment {
   double _orth_1_begin, _orth_1_end;
 
 public:
-  RectanglePlaneSegment() {}
-
   explicit RectanglePlaneSegment(const std::array<Vector, 3> &pts)
       : _container(pts), _pts(pts) {
 #ifndef NDEBUG
@@ -311,45 +307,47 @@ public:
 };
 
 class Cube {
-  std::array<RectanglePlaneSegment, 6> _faces;
+  typedef std::array<RectanglePlaneSegment, 6> FacesTy;
 
-public:
-  explicit Cube(const Vector &center, const Vector &normal_a,
-                const Vector &normal_b, double side) {
+  FacesTy _faces;
+
+  static FacesTy compute_faces(const Vector &center, const Vector &normal_a,
+                               const Vector &normal_b, double side) {
     Vector n_a = normal_a.normalize();
     Vector n_b = normal_b.normalize();
     Vector n_c = n_a.cross_product(n_b);
-
     Vector ns[3] = {n_a, n_b, n_c};
 
-    for (unsigned i = 0; i < 3; i++) {
-      const Vector &axis_0 = ns[(i + 1) % 3] * side;
-      const Vector &axis_1 = ns[(i + 2) % 3] * side;
+    auto compute_face = [&](unsigned face_idx, int sign) {
+      const Vector &axis_0 = ns[(face_idx + 1) % 3] * side;
+      const Vector &axis_1 = ns[(face_idx + 2) % 3] * side;
 
-      assert(Ruler::is_zero(ns[i] * axis_0) && "Expected orthogonal!");
-      assert(Ruler::is_zero(ns[i] * axis_1) && "Expected orthogonal!");
+      assert(Ruler::is_zero(ns[face_idx] * axis_0) && "Expected orthogonal!");
+      assert(Ruler::is_zero(ns[face_idx] * axis_1) && "Expected orthogonal!");
 
-      for (int sign : {-1, 1}) {
-        Vector pt_in_plane = center + sign * ns[i] * side;
+      Vector pt_in_plane = center + sign * ns[face_idx] * side;
 
-        std::array<Vector, 3> pts;
-        pts[0] = pt_in_plane + axis_0 + axis_1;
-        pts[1] = pt_in_plane - axis_0 + axis_1;
-        pts[2] = pt_in_plane - axis_0 - axis_1;
+      std::array<Vector, 3> pts;
+      pts[0] = pt_in_plane + axis_0 + axis_1;
+      pts[1] = pt_in_plane - axis_0 + axis_1;
+      pts[2] = pt_in_plane - axis_0 - axis_1;
 
-        if (sign == -1)
-          std::reverse(pts.begin(), pts.end());
+      if (sign == -1)
+        std::reverse(pts.begin(), pts.end());
 
-        RectanglePlaneSegment rps(pts);
-        if (sign == -1)
-          _faces[2 * i] = rps;
-        else
-          _faces[2 * i + 1] = rps;
-      }
-    }
+      return RectanglePlaneSegment(pts);
+    };
+
+    return {{compute_face(0, -1), compute_face(0, 1), compute_face(1, -1),
+             compute_face(1, 1), compute_face(2, -1), compute_face(2, 1)}};
   }
 
-  const std::array<RectanglePlaneSegment, 6> &faces() const { return _faces; }
+public:
+  explicit Cube(const Vector &center, const Vector &normal_a,
+                const Vector &normal_b, double side)
+      : _faces(Cube::compute_faces(center, normal_a, normal_b, side)) {}
+
+  const FacesTy &faces() const { return _faces; }
 
   bool intersect(const Ray &r, double &out_k, unsigned &face_idx) const {
     double smallest_k = std::numeric_limits<double>::infinity();
