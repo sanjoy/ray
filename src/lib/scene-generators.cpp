@@ -73,19 +73,64 @@ static Camera generate_sphere_scene(Scene &s) {
   return Camera(6.0, 5000, 2500, 200, ray::Vector());
 }
 
-static Camera generate_refraction_scene(Scene &s) {
+static Camera generate_refraction_scene_0(Scene &s) {
   Plane plane(-Vector::get_k(), Vector::get_k() * 3500);
   s.add_object(make_unique<InfinitePlane>(s, plane, Vector::get_i(), 500));
   s.add_object(make_unique<SkyObj>(s));
 
-  auto sphere_pos = Vector::get_i() * 1500;
-  s.add_object(make_unique<SphericalMirrorObj>(s, sphere_pos, 1200.0));
-
-  auto refractive_pos_a = (Vector::get_j() + Vector::get_i()) * 250;
+  auto refractive_pos_a = (2 * Vector::get_j() + Vector::get_i()) * 1500;
   Vector init_normal_a = Vector::get_i();
   Vector init_normal_b = Vector::get_j();
   s.add_object(make_unique<RefractiveBoxObj>(s, refractive_pos_a, init_normal_a,
-                                             init_normal_b, 100.0));
+                                             init_normal_b, 1000.0));
+
+  return Camera(6.0, 5000, 2500, 20, ray::Vector());
+}
+
+static Camera generate_refraction_scene_1(Scene &s) {
+  {
+    Plane plane(-Vector::get_i(), Vector::get_i() * 3500);
+    Vector check_direction = (Vector::get_j() + Vector::get_k()).normalize();
+    s.add_object(make_unique<InfinitePlane>(s, plane, check_direction, 500));
+  }
+
+  {
+    Plane plane(Vector::get_i(), -Vector::get_i() * 3500);
+    Vector check_direction = (Vector::get_j() + Vector::get_k()).normalize();
+    s.add_object(make_unique<InfinitePlane>(s, plane, check_direction, 500));
+  }
+
+  {
+    Plane plane(Vector::get_j(), -Vector::get_j() * 150000);
+    Vector check_direction = (Vector::get_i() + Vector::get_k()).normalize();
+    s.add_object(make_unique<InfinitePlane>(s, plane, check_direction, 500));
+  }
+
+  {
+    Plane plane(-Vector::get_j(), Vector::get_j() * 150000);
+    Vector check_direction = (Vector::get_i() + Vector::get_k()).normalize();
+    s.add_object(make_unique<InfinitePlane>(s, plane, check_direction, 500));
+  }
+
+  {
+    Plane plane(-Vector::get_k(), Vector::get_k() * 150000);
+    Vector check_direction = (Vector::get_i() + Vector::get_j()).normalize();
+    s.add_object(make_unique<InfinitePlane>(s, plane, check_direction, 500));
+  }
+
+  {
+    Plane plane(Vector::get_k(), -Vector::get_k() * 150000);
+    Vector check_direction = (Vector::get_i() + Vector::get_j()).normalize();
+    s.add_object(make_unique<InfinitePlane>(s, plane, check_direction, 500));
+  }
+
+  s.add_object(make_unique<SkyObj>(s));
+
+  auto refractive_pos_a = (2 * Vector::get_j() + Vector::get_i()) * 1500;
+  Vector init_normal_a = Vector::get_i();
+  Vector init_normal_b = Vector::get_j();
+  s.add_object(make_unique<RefractiveBoxObj>(s, refractive_pos_a, init_normal_a,
+                                             init_normal_b, 800.0));
 
   return Camera(6.0, 5000, 2500, 20, ray::Vector());
 }
@@ -93,7 +138,8 @@ static Camera generate_refraction_scene(Scene &s) {
 void ray::for_each_scene_generator(SceneGenCallbackTy callback) {
   callback("basic", generate_basic_scene);
   callback("sphere", generate_sphere_scene);
-  callback("refraction", generate_refraction_scene);
+  callback("refraction-0", generate_refraction_scene_0);
+  callback("refraction-1", generate_refraction_scene_1);
 }
 
 SceneGeneratorTy ray::get_scene_generator_by_name(const char *name) {
