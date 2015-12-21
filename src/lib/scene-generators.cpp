@@ -30,7 +30,7 @@ static Camera generate_basic_scene(Scene &s) {
 
   s.add_object(make_unique<SkyObj>(s));
 
-  return Camera(6.0, 2000, 2000, 150, ray::Vector());
+  return Camera(6.0, 2000, 2000, 150, ray::Vector::get_origin());
 }
 
 static Camera generate_sphere_scene(Scene &s) {
@@ -70,7 +70,7 @@ static Camera generate_sphere_scene(Scene &s) {
   s.add_object(make_unique<SphericalMirrorObj>(s, sphere_pos_b, 600));
   s.add_object(make_unique<SphericalMirrorObj>(s, sphere_pos_c, 600));
 
-  return Camera(6.0, 5000, 2500, 200, ray::Vector());
+  return Camera(6.0, 5000, 2500, 200, ray::Vector::get_origin());
 }
 
 static Camera generate_refraction_scene_0(Scene &s) {
@@ -84,7 +84,7 @@ static Camera generate_refraction_scene_0(Scene &s) {
   s.add_object(make_unique<RefractiveBoxObj>(s, refractive_pos_a, init_normal_a,
                                              init_normal_b, 1000.0));
 
-  return Camera(6.0, 5000, 2500, 20, ray::Vector());
+  return Camera(6.0, 5000, 2500, 20, ray::Vector::get_origin());
 }
 
 static Camera generate_refraction_scene_1(Scene &s) {
@@ -132,7 +132,7 @@ static Camera generate_refraction_scene_1(Scene &s) {
   s.add_object(make_unique<RefractiveBoxObj>(s, refractive_pos_a, init_normal_a,
                                              init_normal_b, 800.0));
 
-  return Camera(6.0, 5000, 2500, 20, ray::Vector());
+  return Camera(6.0, 5000, 2500, 20, ray::Vector::get_origin());
 }
 
 void ray::for_each_scene_generator(SceneGenCallbackTy callback) {

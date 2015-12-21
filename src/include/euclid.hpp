@@ -1,7 +1,8 @@
+/// euclid.hpp - Geometry utilities for a euclidian space
+///
+
 #ifndef RAY_EUCLID_HPP
 #define RAY_EUCLID_HPP
-
-/// euclid.hpp: geometry utilities.
 
 #include <array>
 #include <cassert>
@@ -12,71 +13,131 @@
 
 namespace ray {
 
+/// Utilities related to measuring scalar distances.
+///
 struct Ruler {
-  static bool is_zero(double d) {
+  /// The type we use to represent all scalar and vector lengths.
+  ///
+  /// Put another way, this is the field over which we construct our (euclidian)
+  /// vector space.  Realistically, this exists so that I can switch between
+  /// doubles and floats easily, and also to put all of the "magic numbers"
+  /// (e.g. epsilon) in one place.
+  typedef double Real;
+
+  /// Return true if \p d is zero.
+  static bool is_zero(Real d) {
     return fabs(d) < std::numeric_limits<double>::round_error();
   }
 
-  static bool is_negative(double d) { return d < 0.0; }
+  /// Return true if \p d is negative.
+  static bool is_negative(Real d) { return d < 0.0; }
 
-  static bool is_equal(double d0, double d1) { return is_zero(d0 - d1); }
+  /// Return true if \p d0 and \p d1 are equal.
+  static bool is_equal(Real d0, Real d1) { return is_zero(d0 - d1); }
 
-  static double epsilon() { return 1E-55; }
+  /// The smallest meaningful distance.
+  static Real epsilon() { return 1E-55; }
+
+  /// Positive infinity.
+  static Real infinity() { return std::numeric_limits<Real>::infinity(); }
+
+  static Real zero() { return 0.0; }
+
+  static Real one() { return 1.0; }
 };
 
+/// A 3D vector class.
+///
+/// This can be used to represent both directions and points in 3D space.
+///
 class Vector {
-  double _i = 0.0;
-  double _j = 0.0;
-  double _k = 0.0;
-  bool _is_normal = false;
+  Ruler::Real _i = 0.0;
+  Ruler::Real _j = 0.0;
+  Ruler::Real _k = 0.0;
+  unsigned _is_normal : 1;
+  unsigned _is_valid : 1;
+
+  /// Return true if this vector is known to be normal (i.e. has unit length).
+  ///
+  /// If this returns false, then the vector may or may not be normal, but if
+  /// this returns true, then the vector is definitely normal.
+  bool is_known_normal() const { return _is_normal; }
+
+  /// Return true if this is a properly initialized vector (as opposed to a
+  /// default constructed vector).
+  ///
+  /// To simplify code, is it useful to be able to default construct a
+  /// "sentinel vector", but it is still nice to have a guarantee that it
+  /// doesn't get used in interesting ways.  This flag provides that guarantee.
+  bool is_valid() const { return _is_valid; }
 
 public:
-  Vector() {}
-  explicit Vector(double i, double j, double k) : _i(i), _j(j), _k(k) {}
+  Vector() : _is_normal(0), _is_valid(0) {}
+  explicit Vector(Ruler::Real i, Ruler::Real j, Ruler::Real k)
+      : _i(i), _j(j), _k(k), _is_normal(0), _is_valid(1) {}
 
   static Vector get_i() { return Vector(1.0, 0.0, 0.0); }
   static Vector get_j() { return Vector(0.0, 1.0, 0.0); }
   static Vector get_k() { return Vector(0.0, 0.0, 1.0); }
 
-  double i() const { return _i; }
-  double j() const { return _j; }
-  double k() const { return _k; }
+  static Vector get_origin() { return Vector(0.0, 0.0, 0.0); }
+
+  Ruler::Real i() const { return _i; }
+  Ruler::Real j() const { return _j; }
+  Ruler::Real k() const { return _k; }
 
   bool is_zero() const {
+    assert(is_valid() && "Invalid vector vector vector!");
     return Ruler::is_zero(i()) && Ruler::is_zero(j()) && Ruler::is_zero(k());
   }
 
   bool operator==(const Vector &o) const {
+    assert(is_valid() && o.is_valid() && "Invalid vector!");
     return Ruler::is_equal(i(), o.i()) && Ruler::is_equal(j(), o.j()) &&
            Ruler::is_equal(k(), o.k());
   }
 
   void print(std::ostream &out) const {
+    assert(is_valid() && "Invalid vector!");
     out << "[ " << i() << " " << j() << " " << k() << " ]";
   }
 
   Vector operator+(const Vector &other) const {
+    assert(is_valid() && other.is_valid() && "Invalid vector!");
     return Vector(i() + other.i(), j() + other.j(), k() + other.k());
   }
 
   Vector operator-(const Vector &other) const {
+    assert(is_valid() && other.is_valid() && "Invalid vector!");
     return Vector(i() - other.i(), j() - other.j(), k() - other.k());
   }
 
-  Vector operator-() const { return Vector(-i(), -j(), -k()); }
+  Vector operator-() const {
+    assert(is_valid() && "Invalid vector!");
+    return Vector(-i(), -j(), -k());
+  }
 
-  double operator*(const Vector &other) const {
+  Ruler::Real operator*(const Vector &other) const {
+    assert(is_valid() && other.is_valid() && "Invalid vector!");
     return i() * other.i() + j() * other.j() + k() * other.k();
   }
 
-  Vector operator*(double v) const { return Vector(v * i(), v * j(), v * k()); }
+  Vector operator*(Ruler::Real v) const {
+    assert(is_valid() && "Invalid vector!");
+    return Vector(v * i(), v * j(), v * k());
+  }
 
   Vector cross_product(const Vector &v) const {
+    assert(is_valid() && v.is_valid() && "Invalid vector!");
     return Vector(j() * v.k() - k() * v.j(), k() * v.i() - i() * v.k(),
                   i() * v.j() - j() * v.i());
   }
 
-  bool get_scale(const Vector &v, double &result) const {
+  /// Find \p result such that this vector is equal to \p result * \p v.
+  ///
+  /// If such a \p result does not exist, return false.
+  bool get_scale(const Vector &v, Ruler::Real &result) const {
+    assert(is_valid() && v.is_valid() && "Invalid vector!");
     bool found = false;
     for (auto &p : {std::make_pair(i(), v.i()), std::make_pair(j(), v.j()),
                     std::make_pair(k(), v.k())}) {
@@ -98,17 +159,33 @@ public:
     return true;
   }
 
-  double horizontal_gradient() const {
+  /// Return tangent of the angle this vector makes with the horizontal plane.
+  Ruler::Real horizontal_gradient() const {
+    assert(is_valid() && "Invalid vector!");
     return k() / std::sqrt(i() * i() + j() * j());
   }
 
-  double mag() const { return std::sqrt(i() * i() + j() * j() + k() * k()); }
+  /// Compute the length of this vector.
+  Ruler::Real mag() const {
+    assert(is_valid() && "Invalid vector!");
+    return std::sqrt(i() * i() + j() * j() + k() * k());
+  }
 
-  double dist(const Vector &other) const { return (*this - other).mag(); }
+  /// Compute the distance between the 3D point represented by this vector and
+  /// the 3D point represented by \p other.
+  Ruler::Real dist(const Vector &other) const {
+    assert(is_valid() && other.is_valid() && "Invalid vector!");
+    return (*this - other).mag();
+  }
 
+  /// Return this vector scaled to unit length.
+  ///
+  /// Note: because we remember that a vector is normalized once it is
+  /// normalized, calling this repeatedly on the same vector is not expensive.
   Vector normalize() const {
+    assert(is_valid() && "Invalid vector!");
     assert(!Ruler::is_zero(mag()) && "Cannot normalize a zero vector!");
-    if (_is_normal)
+    if (is_known_normal())
       return *this;
 
     auto result = (*this) * (1.0 / mag());
@@ -116,7 +193,10 @@ public:
     return result;
   }
 
-  Vector rotate(double radian, const Vector &orth) {
+  /// Rotate this vector by \p radian radians, with \p orth being a normal to
+  /// the rotation plane.
+  Vector rotate(Ruler::Real radian, const Vector &orth) {
+    assert(is_valid() && orth.is_valid() && "Invalid vector!");
     assert(Ruler::is_zero(*this * orth) && "precondition!");
 
     Vector orthonormal = orth.normalize();
@@ -131,10 +211,12 @@ inline std::ostream &operator<<(std::ostream &out, const Vector &v) {
   return out;
 }
 
-inline Vector operator*(double d, const Vector &v) { return v * d; }
+inline Vector operator*(Ruler::Real d, const Vector &v) { return v * d; }
 
-// Represents the ray offset() + k * direction(), propagating towards increasing
-// k.
+/// Represents a ray in 3D euclidian space.
+///
+/// The ray consists of all points p = offset() + k * direction() with k >= 0
+///
 class Ray {
   Vector _direction;
   Vector _offset;
@@ -142,8 +224,6 @@ class Ray {
   explicit Ray(Vector o, Vector d) : _direction(d), _offset(o) {}
 
 public:
-  Ray() {}
-
   static Ray from_two_points(Vector from, Vector to) {
     return Ray(from, to - from);
   }
@@ -159,9 +239,13 @@ public:
   const Vector &direction() const { return _direction; }
   const Vector &offset() const { return _offset; }
 
-  Vector at(double k) const { return offset() + k * direction(); }
+  Vector at(Ruler::Real k) const { return offset() + k * direction(); }
 
-  bool intersect(const Ray &r, double &k_self, double &k_other) const {
+  /// Find a the point where \p r intersects this ray, if such an unique point
+  /// exists.
+  ///
+  bool intersect(const Ray &r, Ruler::Real &k_self,
+                 Ruler::Real &k_other) const {
     //     O + k * D  == O' + k' * D'
     // =>  k * D      == (O' - O) + k' * D'
     // =>  k * D X D' == (O' - O) X D'
@@ -177,7 +261,7 @@ public:
     return numerator.get_scale(r.direction(), k_other);
   }
 
-  bool contains(const Vector &v, double &out_k) const {
+  bool contains(const Vector &v, Ruler::Real &out_k) const {
     if (direction().is_zero())
       return false;
     return (v - offset()).get_scale(direction(), out_k);
@@ -189,15 +273,26 @@ inline std::ostream &operator<<(std::ostream &out, const Ray &r) {
   return out;
 }
 
-// Infinite plane in 3D space: all p such that (p - point()) * normal() == 0.
+/// Represents the infinite plane in 3D space.
+///
+/// The plane contains all p such that (p - point()) * normal() == 0.
+///
+/// The sign of the normal vector has semantic meaning in some contexts -- the
+/// "outside" is often denoted by as the side the normal points to, and e.g. the
+/// code to compute reflection and refraction use this information.
 class Plane {
   Vector _normal;
   Vector _point;
 
 public:
+  /// Construct a plane from a normal and a point in the plane.
   explicit Plane(const Vector &norm, const Vector &p)
       : _normal(norm), _point(p) {}
 
+  /// Construct a plane from three points.
+  ///
+  /// This constructor follows the right hand rule for computing the direction
+  /// of the normal.
   explicit Plane(const std::array<Vector, 3> &pts) {
     _normal = (pts[1] - pts[0]).cross_product(pts[2] - pts[0]).normalize();
     _point = pts[0];
@@ -206,9 +301,10 @@ public:
   const Vector &normal() const { return _normal; }
   const Vector &point() const { return _point; }
 
-  // Returns true if r intersects the plane at exactly one point.
-  bool intersect(const Ray &r, double &out) const {
-    double denom = normal() * r.direction();
+  /// Returns true if \p r intersects the plane at exactly one point, and
+  /// returns the offset at which \p r intersects this plane at \p out.
+  bool intersect(const Ray &r, Ruler::Real &out) const {
+    Ruler::Real denom = normal() * r.direction();
 
     if (Ruler::is_zero(denom))
       return false;
@@ -222,99 +318,118 @@ public:
   }
 };
 
-// Rectangle shaped segment of a plane
+/// Rectangle shaped segment of a plane.
+///
+/// The RectanglePlaneSegment contains all p such all of the following are true:
+///
+/// - _container contains p
+/// - _orth_0_begin <= p * _orth_0 < _orth_0_end
+/// - _orth_1_begin <= p * _orth_1 < _orth_1_end
 class RectanglePlaneSegment {
   Plane _container;
-  std::array<Vector, 3> _pts;
   Vector _orth_0, _orth_1;
-  double _orth_0_begin, _orth_0_end;
-  double _orth_1_begin, _orth_1_end;
+  Ruler::Real _orth_0_begin, _orth_0_end;
+  Ruler::Real _orth_1_begin, _orth_1_end;
 
 public:
+  /// Construct a RectanglePlaneSegment from three conrners of a rectangle (the
+  /// fourth one is unique given the three).
   explicit RectanglePlaneSegment(const std::array<Vector, 3> &pts)
-      : _container(pts), _pts(pts) {
+      : _container(pts) {
 #ifndef NDEBUG
-    for (const Vector &v : points())
+    for (const Vector &v : pts)
       assert(container().contains(v));
 #endif
 
-    _orth_0 = (points()[0] - points()[1]).normalize();
-    _orth_1 = (points()[2] - points()[1]).normalize();
+    _orth_0 = (pts[0] - pts[1]).normalize();
+    _orth_1 = (pts[2] - pts[1]).normalize();
 
-    _orth_0_begin = points()[1] * _orth_0;
-    _orth_0_end = points()[0] * _orth_0;
+    _orth_0_begin = pts[1] * _orth_0;
+    _orth_0_end = pts[0] * _orth_0;
 
-    _orth_1_begin = points()[1] * _orth_1;
-    _orth_1_end = points()[2] * _orth_1;
+    _orth_1_begin = pts[1] * _orth_1;
+    _orth_1_end = pts[2] * _orth_1;
 
-    assert(Ruler::is_zero(_orth_0 * _orth_1));
+    assert(Ruler::is_zero(orth_0 * _orth_1) && "Expected orthogonal vectors!");
   }
 
   const Plane &container() const { return _container; }
   const Vector &normal() const { return container().normal(); }
-  const std::array<Vector, 3> &points() const { return _pts; }
 
-  bool intersect(const Ray &r, double &out) const {
+  /// Return true if \p r intersects this RectanglePlaneSegment, returning the
+  /// offset of the ray in \p out.
+  bool intersect(const Ray &r, Ruler::Real &out) const {
     if (!container().intersect(r, out))
       return false;
 
     Vector isection = r.at(out);
 
-    double orth_0_component = isection * _orth_0;
+    Ruler::Real orth_0_component = isection * _orth_0;
     if (orth_0_component > _orth_0_end || orth_0_component < _orth_0_begin)
       return false;
 
-    double orth_1_component = isection * _orth_1;
+    Ruler::Real orth_1_component = isection * _orth_1;
     return (orth_1_component <= _orth_1_end &&
             orth_1_component >= _orth_1_begin);
   }
 };
 
+/// Represents a sphere in 3D space.
+///
+/// The sphere consists of all points p such that |p - _center| == _radius.
 class Sphere {
   Vector _center;
-  double _radius;
-  Vector _center_normal;
-  double _rhs;
+  Ruler::Real _radius;
+
+  /// This is a cached value that can always be recomputed from _center and
+  /// _radius.  Caching this helps us make the implementation of intersect
+  /// faster.
+  Ruler::Real _rhs;
 
 public:
-  Sphere(const Vector &center, double radius)
-      : _center(center), _radius(radius), _center_normal(_center.normalize()) {
+  explicit Sphere(const Vector &center, Ruler::Real radius)
+      : _center(center), _radius(radius) {
     _rhs = center * center - radius * radius;
   }
 
   const Vector &center() const { return _center; }
-  double radius() const { return _radius; }
+  Ruler::Real radius() const { return _radius; }
 
-  bool intersect(const Ray &r, double &out) const {
-    // k^2 * a + k * b + c = 0
+  /// Return true if \p r intersects this sphere, returning the offset in \p out
+  /// if so.
+  bool intersect(const Ray &r, Ruler::Real &out) const {
+    // Try form an equation of the form "k^2 * a + k * b + c = 0".
 
-    double a = r.direction() * r.direction();
-    double b =
+    Ruler::Real a = r.direction() * r.direction();
+    Ruler::Real b =
         2 * (r.direction() * r.offset()) - 2 * (r.direction() * center());
-    double c = r.offset() * r.offset() - 2 * r.offset() * center() + _rhs;
+    Ruler::Real c = r.offset() * r.offset() - 2 * r.offset() * center() + _rhs;
 
     assert(!Ruler::is_zero(a) && "Direction vector has unit length!");
 
-    double disc_sqr = b * b - 4 * a * c;
+    Ruler::Real disc_sqr = b * b - 4 * a * c;
     if (Ruler::is_negative(disc_sqr))
       return false;
 
-    double disc = std::sqrt(disc_sqr);
-    double k1 = (-b + disc) / (2 * a);
-    double k2 = (-b - disc) / (2 * a);
+    Ruler::Real disc = std::sqrt(disc_sqr);
+    Ruler::Real k1 = (-b + disc) / (2 * a);
+    Ruler::Real k2 = (-b - disc) / (2 * a);
 
     out = k1 < k2 ? k1 : k2;
     return true;
   }
 };
 
+/// Represents a cube in 3D space.
+///
+/// The cube is essentially a 6-tuple of RectanglePlaneSegments.
 class Cube {
   typedef std::array<RectanglePlaneSegment, 6> FacesTy;
 
   FacesTy _faces;
 
   static FacesTy compute_faces(const Vector &center, const Vector &normal_a,
-                               const Vector &normal_b, double side) {
+                               const Vector &normal_b, Ruler::Real side) {
     Vector n_a = normal_a.normalize();
     Vector n_b = normal_b.normalize();
     Vector n_c = n_a.cross_product(n_b);
@@ -345,20 +460,28 @@ class Cube {
   }
 
 public:
+  /// Construct a cube such that
+  ///
+  ///  - \p center is its geometric center
+  ///  - \p normal_a and \p normal_b are normals to two orthogonal faces (all
+  ///    other normals are functions of these two normals)
+  ///  - each side of the cube is \p side units long
   explicit Cube(const Vector &center, const Vector &normal_a,
-                const Vector &normal_b, double side)
+                const Vector &normal_b, Ruler::Real side)
       : _faces(Cube::compute_faces(center, normal_a, normal_b, side)) {}
 
   const FacesTy &faces() const { return _faces; }
 
   static const int kFaceCount = 6;
 
-  bool intersect(const Ray &r, double &out_k, unsigned &face_idx) const {
-    double smallest_k = std::numeric_limits<double>::infinity();
+  /// Return true if \p r intersects this Cube, and return the ray offset in \p
+  /// out_k and the face of intersection in \p face_idx.
+  bool intersect(const Ray &r, Ruler::Real &out_k, unsigned &face_idx) const {
+    Ruler::Real smallest_k = std::numeric_limits<Ruler::Real>::infinity();
     face_idx = -1;
 
     for (unsigned i = 0; i < kFaceCount; i++) {
-      double k;
+      Ruler::Real k;
       if (_faces[i].intersect(r, k) && k < smallest_k) {
         smallest_k = k;
         face_idx = i;
