@@ -30,7 +30,7 @@ inline Ray get_refracted_ray(const Ray &r, double k, Vector normal,
     out_total_internal_reflection = false;
     double tan_of_outgoing_sq = sin_of_outgoing_sq / (1 - sin_of_outgoing_sq);
     double tan_of_outgoing = std::sqrt(tan_of_outgoing_sq);
-    Vector orth = (incoming_dir - normal).normalize();
+    Vector orth = (incoming_dir + normal).normalize();
     Vector new_dir = orth * (-1.0 * tan_of_outgoing) - normal;
     return Ray::from_offset_and_direction(r.at(k) + normal * Ruler::epsilon(),
                                           new_dir);
