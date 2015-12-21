@@ -4,6 +4,7 @@
 /// newton.hpp: properties of light.
 
 #include "euclid.hpp"
+#include "support.hpp"
 
 namespace ray {
 
@@ -17,25 +18,24 @@ inline Ray get_reflected_ray(const Ray &r, const Vector &pt,
 }
 
 inline Ray get_refracted_ray(const Ray &r, double k, Vector normal,
-                             double refractive_index,
+                             double relative_refractive_index,
                              bool &out_total_internal_reflection) {
-  normal = normal.normalize();
-  double cos_of_incoming = r.direction().normalize() * normal;
+  Vector incoming_dir = r.direction().normalize();
+  double cos_of_incoming = incoming_dir * normal;
+  double sin_of_incoming_sq = 1.0 - std::pow(cos_of_incoming, 2);
+  double sin_of_outgoing_sq =
+      std::pow(relative_refractive_index, 2) * sin_of_incoming_sq;
 
-  double sin_sqr_theta_t =
-      std::pow(refractive_index, 2) * (1 - std::pow(cos_of_incoming, 2));
-  double disc = 1 - sin_sqr_theta_t;
-  if (disc >= 0.0) {
-    // Refraction
+  if (sin_of_outgoing_sq <= 1.0) {
     out_total_internal_reflection = false;
-    double normal_factor = refractive_index * cos_of_incoming - std::sqrt(disc);
-    Vector new_dir = refractive_index * r.direction() + normal * normal_factor;
-
-    return Ray::from_offset_and_direction(r.at(k) - (normal * Ruler::epsilon()),
+    double tan_of_outgoing_sq = sin_of_outgoing_sq / (1 - sin_of_outgoing_sq);
+    double tan_of_outgoing = std::sqrt(tan_of_outgoing_sq);
+    Vector orth = (incoming_dir - normal).normalize();
+    Vector new_dir = orth * (-1.0 * tan_of_outgoing) - normal;
+    return Ray::from_offset_and_direction(r.at(k) + normal * Ruler::epsilon(),
                                           new_dir);
   }
 
-  // Total internal reflection
   out_total_internal_reflection = true;
   return get_reflected_ray(r, r.at(k), normal);
 }
