@@ -12,7 +12,7 @@ public:
     int _y;
 
   public:
-    /* implict */ Point(int x, int y) : _x(x), _y(y) {}
+    explicit Point(int x, int y) : _x(x), _y(y) {}
 
     int x() const { return _x; }
     int y() const { return _y; }
@@ -58,7 +58,7 @@ private:
   }
 };
 
-Camera::Camera(double focal_length, unsigned screen_width_px,
+Camera::Camera(Ruler::Real focal_length, unsigned screen_width_px,
                unsigned screen_height_px, unsigned screen_resolution,
                const Vector &pos)
     : _focal_length(focal_length), _screen_width_px(screen_width_px),
@@ -68,7 +68,7 @@ Camera::Camera(double focal_length, unsigned screen_width_px,
 Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
 
-  double max_diag_square =
+  Ruler::Real max_diag_square =
       std::pow(_screen_height_px / 2, 2) + std::pow(_screen_width_px / 2, 2);
 
   double focal_length = _focal_length;
@@ -76,7 +76,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   auto focus = _focus_position;
 
   auto render_one_pixel = [&](int x, int y, Context &ctx) {
-    double scale = 1.0 + (x * x + y * y) / max_diag_square;
+    auto scale = Ruler::one() + (x * x + y * y) / max_diag_square;
     const Vector sample_pt(focal_length, (x * scale) / resolution,
                            (y * scale) / resolution);
     return scene.render_pixel(Ray::from_two_points(focus, focus + sample_pt),
