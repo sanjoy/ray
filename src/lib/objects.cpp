@@ -108,7 +108,7 @@ bool RefractiveBoxObj::incident(Context &ctx, const Ray &incoming,
   const double ratio1 = _relative_refractive_index;
 
   bool is_tir;
-  r_i = get_refracted_ray(r_i, k, _cube.faces()[incident_idx].normal(), ratio0,
+  r_i = get_refracted_ray(r_i, r_i.at(k), _cube.faces()[incident_idx].normal(), ratio0,
                           is_tir);
 
   for (int i = 0; i < 30; i++) {
@@ -116,7 +116,7 @@ bool RefractiveBoxObj::incident(Context &ctx, const Ray &incoming,
       return false;
 
     const Vector normal = -_cube.faces()[incident_idx].normal();
-    r_i = get_refracted_ray(r_i, k, normal, ratio1, is_tir);
+    r_i = get_refracted_ray(r_i, r_i.at(k), normal, ratio1, is_tir);
     if (!is_tir)
       break;
   }
