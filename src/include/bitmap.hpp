@@ -1,8 +1,9 @@
-#ifndef RAY_BITMAP_HPP
-#define RAY_BITMAP_HPP
-
 /// bitmap.hpp: contains helper routines for generating and
 /// serializing a bitmap file.
+///
+
+#ifndef RAY_BITMAP_HPP
+#define RAY_BITMAP_HPP
 
 #include <cassert>
 #include <cstdint>
@@ -11,6 +12,7 @@
 
 namespace ray {
 
+/// Represents a color in RGB.
 class Color {
   uint8_t _red = 0;
   uint8_t _green = 0;
@@ -27,7 +29,14 @@ public:
   uint8_t blue() const { return _blue; }
 
   Color operator*(float f) {
-    return Color(uint8_t(red() * f), uint8_t(green() * f), uint8_t(blue() * f));
+    assert(f >= 0.0 && "Can't scale to negative!");
+    auto clamp = [](float x) {
+      if (x > 255.0)
+        return uint8_t(255);
+      return uint8_t(x);
+    };
+
+    return Color(clamp(red() * f), clamp(green() * f), clamp(blue() * f));
   }
 
   static Color create_white() { return Color(255, 255, 255); }
@@ -50,6 +59,7 @@ inline Color operator+(const Color &c0, const Color &c1) {
                clamp(uint16_t(c0.blue()) + uint16_t(c1.blue())));
 }
 
+/// An in-memory representation of a bitmap.
 class Bitmap {
   unsigned _height;
   unsigned _width;
