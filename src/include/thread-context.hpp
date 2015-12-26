@@ -1,7 +1,7 @@
+/// thread-context.hpp: Per-thread, per-object state.
+
 #ifndef RAY_CONTEXT_HPP
 #define RAY_CONTEXT_HPP
-
-/// context.hpp: per-thread state.
 
 #include <memory>
 
@@ -9,12 +9,12 @@ namespace ray {
 
 /// Objects have per render-thread state.  This provides thread local
 /// storage for objects.
-class Context {
+class ThreadContext {
   std::unique_ptr<intptr_t[]> _obj_data;
   unsigned _obj_count;
 
 public:
-  explicit Context(unsigned obj_count)
+  explicit ThreadContext(unsigned obj_count)
       : _obj_data(new intptr_t[obj_count]), _obj_count(obj_count) {
     (void)_obj_count;
   }

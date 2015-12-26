@@ -20,8 +20,9 @@ BoxObj::BoxObj(const Scene &s, const Vector &center, const Vector &normal_a,
   _colors[5] = Color(71, 0, 71);
 }
 
-bool BoxObj::incident(Context &, const Ray &incoming, double current_best_k,
-                      double &out_k, Color &out_c) const {
+bool BoxObj::incident(ThreadContext &, const Ray &incoming,
+                      double current_best_k, double &out_k,
+                      Color &out_c) const {
   unsigned idx;
   if (_cube.intersect(incoming, out_k, idx)) {
     out_c = _colors[idx];
@@ -31,8 +32,9 @@ bool BoxObj::incident(Context &, const Ray &incoming, double current_best_k,
   return false;
 }
 
-bool SkyObj::incident(Context &, const Ray &incoming, double current_best_k,
-                      double &out_k, Color &out_c) const {
+bool SkyObj::incident(ThreadContext &, const Ray &incoming,
+                      double current_best_k, double &out_k,
+                      Color &out_c) const {
   if (current_best_k < std::numeric_limits<double>::max())
     return false;
 
@@ -48,7 +50,7 @@ bool SkyObj::incident(Context &, const Ray &incoming, double current_best_k,
   return true;
 }
 
-bool InfinitePlane::incident(Context &, const Ray &incoming,
+bool InfinitePlane::incident(ThreadContext &, const Ray &incoming,
                              double current_best_k, double &out_k,
                              Color &out_c) const {
   if (!_plane.intersect(incoming, out_k) || out_k > current_best_k)
@@ -65,7 +67,7 @@ bool InfinitePlane::incident(Context &, const Ray &incoming,
   return true;
 }
 
-bool SphericalMirrorObj::incident(Context &ctx, const Ray &incoming,
+bool SphericalMirrorObj::incident(ThreadContext &ctx, const Ray &incoming,
                                   double current_best_k, double &out_k,
                                   Color &out_c) const {
   intptr_t &nesting = ctx.get(object_id());
@@ -91,7 +93,7 @@ RefractiveBoxObj::RefractiveBoxObj(const Scene &s, const Vector &center,
                                    const Vector &normal_b, double side)
     : Object(s), _cube(center, normal_a, normal_b, side) {}
 
-bool RefractiveBoxObj::incident(Context &ctx, const Ray &incoming,
+bool RefractiveBoxObj::incident(ThreadContext &ctx, const Ray &incoming,
                                 double current_best_k, double &out_k,
                                 Color &out_c) const {
   intptr_t &nesting = ctx.get(object_id());

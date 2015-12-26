@@ -15,7 +15,7 @@ class BoxObj : public Object {
 public:
   BoxObj(const Scene &scene, const Vector &center, const Vector &normal_a,
          const Vector &normal_b, double side);
-  virtual bool incident(Context &, const Ray &, double, double &,
+  virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
 };
 
@@ -27,7 +27,7 @@ class SphericalMirrorObj : public Object {
 public:
   SphericalMirrorObj(const Scene &scene, const Vector &center, double radius)
       : Object(scene), _sphere(center, radius) {}
-  virtual bool incident(Context &, const Ray &, double, double &,
+  virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
 };
 
@@ -38,7 +38,7 @@ public:
   SkyObj(const Scene &scene, bool uniform = false)
       : Object(scene), _uniform(uniform) {}
 
-  virtual bool incident(Context &, const Ray &, double, double &,
+  virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
 };
 
@@ -57,7 +57,7 @@ public:
     _axis_1 = _axis_1.normalize();
   }
 
-  virtual bool incident(Context &, const Ray &, double, double &,
+  virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
 };
 
@@ -72,7 +72,7 @@ class RefractiveBoxObj : public Object {
 public:
   RefractiveBoxObj(const Scene &scene, const Vector &center,
                    const Vector &normal_a, const Vector &normal_b, double side);
-  virtual bool incident(Context &, const Ray &, double, double &,
+  virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
 };
 }

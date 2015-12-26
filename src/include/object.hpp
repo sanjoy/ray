@@ -2,7 +2,7 @@
 #define RAY_OBJECT_HPP
 
 #include "bitmap.hpp"
-#include "context.hpp"
+#include "thread-context.hpp"
 #include "euclid.hpp"
 
 namespace ray {
@@ -32,7 +32,9 @@ public:
   const Scene &container() const { return _container; }
 
   /// Subclasses extend this method to initialize the object's data in \p ctx.
-  virtual void initialize(Context &ctx) const { ctx.get(object_id()) = 0; }
+  virtual void initialize(ThreadContext &ctx) const {
+    ctx.get(object_id()) = 0;
+  }
 
   /// The key method that implements the object's interaction with light.
   ///
@@ -40,8 +42,9 @@ public:
   /// ray does intersect with this object and false if it does not.  On
   /// intersection, the color of ray is returned in \p out_pixel, and the point
   /// of incidence is returned in \p out_incidence_k.
-  virtual bool incident(Context &ctx, const Ray &r, double current_smallest_k,
-                        double &out_incidence_k, Color &out_pixel) const = 0;
+  virtual bool incident(ThreadContext &ctx, const Ray &r,
+                        double current_smallest_k, double &out_incidence_k,
+                        Color &out_pixel) const = 0;
 };
 }
 

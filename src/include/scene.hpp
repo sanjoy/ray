@@ -5,7 +5,7 @@
 #define RAY_SCENE_HPP
 
 #include "object.hpp"
-#include "context.hpp"
+#include "thread-context.hpp"
 #include "support.hpp"
 
 #include <memory>
@@ -29,11 +29,11 @@ public:
   /// Render a single pixel, with the thread context passed in as \p ctx.
   ///
   /// Return the color of the rendered pixel.
-  Color render_pixel(const Ray &r, Context &ctx) const;
+  Color render_pixel(const Ray &r, ThreadContext &ctx) const;
 
   /// Initialize the object_id fields of the contained objects, related state in
   /// \p ctx.
-  void init_object_ids(Context &ctx) const;
+  void init_object_ids(ThreadContext &ctx) const;
 
   /// Return the number of objects contained in this scene.
   unsigned object_count() const { return _objects.size(); }

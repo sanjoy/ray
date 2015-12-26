@@ -34,7 +34,7 @@ public:
         at(xi, yi) = render_fn(xi, yi, _ctx);
   }
 
-  Context context() { return _ctx; }
+  ThreadContext context() { return _ctx; }
 
   template <typename DrainFnTy> void drain_work(const DrainFnTy &drain_fn) {
     for (int xi = _top_left.x(), xe = _bottom_right.x(); xi != xe; ++xi)
@@ -46,7 +46,7 @@ private:
   Point _top_left;
   Point _bottom_right;
   RenderFnTy &_render_fn;
-  Context _ctx;
+  ThreadContext _ctx;
   std::unique_ptr<Color[]> _result;
 
   Color &at(int x, int y) {
@@ -75,7 +75,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   unsigned resolution = _screen_resolution;
   auto focus = _focus_position;
 
-  auto render_one_pixel = [&](int x, int y, Context &ctx) {
+  auto render_one_pixel = [&](int x, int y, ThreadContext &ctx) {
     auto scale = Ruler::one() + (x * x + y * y) / max_diag_square;
     const Vector sample_pt(focal_length, (x * scale) / resolution,
                            (y * scale) / resolution);
@@ -118,7 +118,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   return bmp;
 }
 
-Color Scene::render_pixel(const Ray &r, Context &ctx) const {
+Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
   double smallest_k = std::numeric_limits<double>::infinity();
   Color pixel;
 
@@ -134,7 +134,7 @@ Color Scene::render_pixel(const Ray &r, Context &ctx) const {
   return pixel;
 }
 
-void Scene::init_object_ids(Context &ctx) const {
+void Scene::init_object_ids(ThreadContext &ctx) const {
   for (unsigned i = 0, e = _objects.size(); i != e; ++i) {
     _objects[i]->set_object_id(i);
     _objects[i]->initialize(ctx);
