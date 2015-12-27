@@ -23,8 +23,12 @@ class Object {
   /// The scene containing this object.  There can only be one.
   const Scene &_container;
 
+  /// A string describing the object.
+  std::string _desc;
+
 public:
-  explicit Object(const Scene &container) : _container(container) {}
+  explicit Object(const Scene &container, std::string desc)
+      : _container(container), _desc(std::move(desc)) {}
 
   unsigned object_id() const { return _object_id; }
   void set_object_id(unsigned obj_id) { _object_id = obj_id; }
@@ -45,6 +49,9 @@ public:
   virtual bool incident(ThreadContext &ctx, const Ray &r,
                         double current_smallest_k, double &out_incidence_k,
                         Color &out_pixel) const = 0;
+
+  /// Return a string describing the object.
+  const std::string &description() const { return _desc; }
 };
 }
 

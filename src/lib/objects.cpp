@@ -10,7 +10,10 @@ using namespace ray;
 
 BoxObj::BoxObj(const Scene &s, const Vector &center, const Vector &normal_a,
                const Vector &normal_b, double side)
-    : Object(s), _cube(center, normal_a, normal_b, side) {
+    : Object(s,
+             generate_description_string("BoxObj", "center", center, "normal-a",
+                                         normal_a, "normal-b", normal_b)),
+      _cube(center, normal_a, normal_b, side) {
   _colors[0] = Color(61, 31, 0);
   _colors[1] = Color(102, 0, 60);
   _colors[2] = Color(0, 102, 153);
@@ -91,7 +94,10 @@ bool SphericalMirrorObj::incident(ThreadContext &ctx, const Ray &incoming,
 RefractiveBoxObj::RefractiveBoxObj(const Scene &s, const Vector &center,
                                    const Vector &normal_a,
                                    const Vector &normal_b, double side)
-    : Object(s), _cube(center, normal_a, normal_b, side) {}
+    : Object(s, generate_description_string(
+                    "RefractiveBoxObj", "center", center, "normal-a", normal_a,
+                    "normal-b", normal_b, "side", side)),
+      _cube(center, normal_a, normal_b, side) {}
 
 bool RefractiveBoxObj::incident(ThreadContext &ctx, const Ray &incoming,
                                 double current_best_k, double &out_k,

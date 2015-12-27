@@ -233,7 +233,7 @@ public:
   }
 
   void print(std::ostream &out) const {
-    out << "O: " << offset() << " D: " << direction();
+    out << "[O: " << offset() << " D: " << direction() << "]";
   }
 
   const Vector &direction() const { return _direction; }
@@ -316,7 +316,16 @@ public:
   bool contains(const Vector &p) const {
     return Ruler::is_zero((p - point()) * normal());
   }
+
+  void print(std::ostream &out) const {
+    out << "[N: " << normal() << " P: " << point() << "]";
+  }
 };
+
+inline std::ostream &operator<<(std::ostream &out, const Plane &p) {
+  p.print(out);
+  return out;
+}
 
 /// Rectangle shaped segment of a plane.
 ///

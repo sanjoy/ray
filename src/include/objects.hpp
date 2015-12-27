@@ -3,6 +3,7 @@
 
 #include "euclid.hpp"
 #include "object.hpp"
+#include "support.hpp"
 
 #include <memory>
 
@@ -26,7 +27,10 @@ class SphericalMirrorObj : public Object {
 
 public:
   SphericalMirrorObj(const Scene &scene, const Vector &center, double radius)
-      : Object(scene), _sphere(center, radius) {}
+      : Object(scene,
+               generate_description_string("SphericalMirrorObj", "center",
+                                           center, "radius", radius)),
+        _sphere(center, radius) {}
   virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
 };
@@ -36,7 +40,9 @@ class SkyObj : public Object {
 
 public:
   SkyObj(const Scene &scene, bool uniform = false)
-      : Object(scene), _uniform(uniform) {}
+      : Object(scene,
+               generate_description_string("SkyObj", "uniform", uniform)),
+        _uniform(uniform) {}
 
   virtual bool incident(ThreadContext &, const Ray &, double, double &,
                         Color &) const override;
@@ -50,7 +56,10 @@ class InfinitePlane : public Object {
 public:
   InfinitePlane(const Scene &scene, Plane plane, Vector axis_0,
                 double check_size)
-      : Object(scene), _plane(plane), _check_size(check_size), _axis_0(axis_0),
+      : Object(scene, generate_description_string("InfinitePlane", "plane",
+                                                  plane, "axis-0", axis_0,
+                                                  "check-size", check_size)),
+        _plane(plane), _check_size(check_size), _axis_0(axis_0),
         _axis_1(axis_0.cross_product(plane.normal())) {
 
     _axis_0 = _axis_0.normalize();
