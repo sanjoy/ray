@@ -72,21 +72,45 @@ static inline std::string generate_description_string(
   return result;
 }
 
+enum class IndentActionTy { indent = 42 };
+
 class ActiveLogger {
   std::string _log;
   std::stringstream _stream;
   bool _enabled;
+  unsigned _indent = 0;
 
 public:
   explicit ActiveLogger(bool enabled) : _enabled(enabled) {}
   std::stringstream &stream() { return _stream; }
   bool is_enabled() const { return _enabled; }
+
+  void increase_indent() {
+    assert(_indent < 500 && "Sanity!");
+    _indent++;
+  }
+  void decrease_indent() {
+    assert(_indent != 0 && "Underflow!");
+    _indent--;
+  }
+
+  void insert_indent() {
+    for (unsigned i = 0, e = _indent; i != e; ++i)
+      _stream << ' ';
+  }
 };
 
 template <typename T>
 inline ActiveLogger &operator<<(ActiveLogger &out, const T &t) {
   if (out.is_enabled())
     out.stream() << t;
+  return out;
+}
+
+template <>
+inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out, const IndentActionTy &t) {
+  if (out.is_enabled())
+    out.insert_indent();
   return out;
 }
 
@@ -99,6 +123,21 @@ inline InactiveLogger &operator<<(InactiveLogger &out, const T &t) {
   return out;
 }
 
+template<typename LoggerTy>
+class GenericIndentScope {
+  LoggerTy &_logger;
+
+public:
+  explicit GenericIndentScope(const char *heading, LoggerTy &logger) : _logger(logger) {
+    _logger << heading << "\n";
+    _logger.increase_indent();
+  }
+
+  ~GenericIndentScope() {
+    _logger.decrease_indent();
+  }
+};
+
 #define ENABLE_LOGGING
 
 #ifdef ENABLE_LOGGING
@@ -106,6 +145,9 @@ typedef ActiveLogger Logger;
 #else
 typedef InactiveLogger Logger;
 #endif
+
+typedef GenericIndentScope<Logger> IndentScope;
+
 }
 
 #endif
