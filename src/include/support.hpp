@@ -128,9 +128,8 @@ template <typename LoggerTy> class GenericIndentScope {
   LoggerTy &_logger;
 
 public:
-  explicit GenericIndentScope(const char *heading, LoggerTy &logger)
+  explicit GenericIndentScope(LoggerTy &logger)
       : _logger(logger) {
-    _logger << heading << "\n";
     _logger.increase_indent();
   }
 
