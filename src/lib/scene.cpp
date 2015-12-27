@@ -75,12 +75,14 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   unsigned resolution = _screen_resolution;
   auto focus = _focus_position;
 
+  Logger logger;
+
   auto render_one_pixel = [&](int x, int y, ThreadContext &ctx) {
     auto scale = Ruler::one() + (x * x + y * y) / max_diag_square;
     const Vector sample_pt(focal_length, (x * scale) / resolution,
                            (y * scale) / resolution);
     return scene.render_pixel(Ray::from_two_points(focus, focus + sample_pt),
-                              ctx);
+                              ctx, logger);
   };
 
   typedef decltype(render_one_pixel) RenderFnTy;
@@ -118,14 +120,15 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   return bmp;
 }
 
-Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
+Color Scene::render_pixel(const Ray &r, ThreadContext &ctx, Logger &l) const {
   double smallest_k = std::numeric_limits<double>::infinity();
   Color pixel;
 
   for (auto &o : _objects) {
     double k;
     Color c;
-    if (o->incident(ctx, r, smallest_k, k, c) && k < smallest_k && k >= 0.0) {
+    if (o->incident(ctx, l, r, smallest_k, k, c) && k < smallest_k &&
+        k >= 0.0) {
       smallest_k = k;
       pixel = c;
     }

@@ -16,8 +16,8 @@ class BoxObj : public Object {
 public:
   BoxObj(const Scene &scene, const Vector &center, const Vector &normal_a,
          const Vector &normal_b, double side);
-  virtual bool incident(ThreadContext &, const Ray &, double, double &,
-                        Color &) const override;
+  virtual bool incident(ThreadContext &, Logger &l, const Ray &, double,
+                        double &, Color &) const override;
 };
 
 class SphericalMirrorObj : public Object {
@@ -31,8 +31,8 @@ public:
                generate_description_string("SphericalMirrorObj", "center",
                                            center, "radius", radius)),
         _sphere(center, radius) {}
-  virtual bool incident(ThreadContext &, const Ray &, double, double &,
-                        Color &) const override;
+  virtual bool incident(ThreadContext &, Logger &l, const Ray &, double,
+                        double &, Color &) const override;
 };
 
 class SkyObj : public Object {
@@ -44,8 +44,8 @@ public:
                generate_description_string("SkyObj", "uniform", uniform)),
         _uniform(uniform) {}
 
-  virtual bool incident(ThreadContext &, const Ray &, double, double &,
-                        Color &) const override;
+  virtual bool incident(ThreadContext &, Logger &, const Ray &, double,
+                        double &, Color &) const override;
 };
 
 class InfinitePlane : public Object {
@@ -66,8 +66,8 @@ public:
     _axis_1 = _axis_1.normalize();
   }
 
-  virtual bool incident(ThreadContext &, const Ray &, double, double &,
-                        Color &) const override;
+  virtual bool incident(ThreadContext &, Logger &, const Ray &, double,
+                        double &, Color &) const override;
 };
 
 class RefractiveBoxObj : public Object {
@@ -81,8 +81,8 @@ class RefractiveBoxObj : public Object {
 public:
   RefractiveBoxObj(const Scene &scene, const Vector &center,
                    const Vector &normal_a, const Vector &normal_b, double side);
-  virtual bool incident(ThreadContext &, const Ray &, double, double &,
-                        Color &) const override;
+  virtual bool incident(ThreadContext &, Logger &, const Ray &, double,
+                        double &, Color &) const override;
 };
 }
 

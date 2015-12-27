@@ -4,6 +4,7 @@
 #include "bitmap.hpp"
 #include "thread-context.hpp"
 #include "euclid.hpp"
+#include "support.hpp"
 
 namespace ray {
 
@@ -46,7 +47,7 @@ public:
   /// ray does intersect with this object and false if it does not.  On
   /// intersection, the color of ray is returned in \p out_pixel, and the point
   /// of incidence is returned in \p out_incidence_k.
-  virtual bool incident(ThreadContext &ctx, const Ray &r,
+  virtual bool incident(ThreadContext &ctx, Logger &l, const Ray &r,
                         double current_smallest_k, double &out_incidence_k,
                         Color &out_pixel) const = 0;
 

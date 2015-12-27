@@ -71,6 +71,32 @@ static inline std::string generate_description_string(
      << field_name_3 << ": " << field_val_3 << ")";
   return result;
 }
+
+struct ActiveLogger {
+  std::string _log;
+  std::stringstream _stream;
+};
+
+template <typename T>
+inline ActiveLogger &operator<<(ActiveLogger &out, const T &t) {
+  out._stream << t;
+  return out;
+}
+
+struct InactiveLogger {};
+
+template <typename T>
+inline InactiveLogger &operator<<(InactiveLogger &out, const T &t) {
+  return out;
+}
+
+#define ENABLE_LOGGING
+
+#ifdef ENABLE_LOGGING
+typedef ActiveLogger Logger;
+#else
+typedef InactiveLogger Logger;
+#endif
 }
 
 #endif
