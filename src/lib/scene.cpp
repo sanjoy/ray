@@ -75,7 +75,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   unsigned resolution = _screen_resolution;
   auto focus = _focus_position;
 
-  Logger logger;
+  Logger logger(false);
 
   auto render_one_pixel = [&](int x, int y, ThreadContext &ctx) {
     auto scale = Ruler::one() + (x * x + y * y) / max_diag_square;

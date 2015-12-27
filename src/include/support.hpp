@@ -72,18 +72,27 @@ static inline std::string generate_description_string(
   return result;
 }
 
-struct ActiveLogger {
+class ActiveLogger {
   std::string _log;
   std::stringstream _stream;
+  bool _enabled;
+
+public:
+  explicit ActiveLogger(bool enabled) : _enabled(enabled) {}
+  std::stringstream &stream() { return _stream; }
+  bool is_enabled() const { return _enabled; }
 };
 
 template <typename T>
 inline ActiveLogger &operator<<(ActiveLogger &out, const T &t) {
-  out._stream << t;
+  if (out.is_enabled())
+    out.stream() << t;
   return out;
 }
 
-struct InactiveLogger {};
+struct InactiveLogger {
+  explicit InactiveLogger(bool enabled) {}
+};
 
 template <typename T>
 inline InactiveLogger &operator<<(InactiveLogger &out, const T &t) {
