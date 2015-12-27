@@ -108,7 +108,8 @@ inline ActiveLogger &operator<<(ActiveLogger &out, const T &t) {
 }
 
 template <>
-inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out, const IndentActionTy &t) {
+inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out,
+                                                const IndentActionTy &t) {
   if (out.is_enabled())
     out.insert_indent();
   return out;
@@ -123,19 +124,17 @@ inline InactiveLogger &operator<<(InactiveLogger &out, const T &t) {
   return out;
 }
 
-template<typename LoggerTy>
-class GenericIndentScope {
+template <typename LoggerTy> class GenericIndentScope {
   LoggerTy &_logger;
 
 public:
-  explicit GenericIndentScope(const char *heading, LoggerTy &logger) : _logger(logger) {
+  explicit GenericIndentScope(const char *heading, LoggerTy &logger)
+      : _logger(logger) {
     _logger << heading << "\n";
     _logger.increase_indent();
   }
 
-  ~GenericIndentScope() {
-    _logger.decrease_indent();
-  }
+  ~GenericIndentScope() { _logger.decrease_indent(); }
 };
 
 #define ENABLE_LOGGING
@@ -147,7 +146,6 @@ typedef InactiveLogger Logger;
 #endif
 
 typedef GenericIndentScope<Logger> IndentScope;
-
 }
 
 #endif
