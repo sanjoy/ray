@@ -24,48 +24,31 @@ std::unique_ptr<T> make_unique(Args &&... args) {
 /// printf would've printed.
 #define printf_cr(fmt, ...) printf(fmt "\n", ##__VA_ARGS__)
 
-template <typename T0>
+namespace internal {
+
+static inline void print_recursive(std::stringstream &ss) {}
+
+template <typename K, typename V, typename... Args>
+static inline void print_recursive(std::stringstream &ss, K key, V val,
+                                   Args... args) {
+  ss << " " << key << ": " << val;
+  print_recursive(ss, args...);
+}
+
+}
+
+template <typename... Args>
 static inline std::string generate_description_string(const char *kind,
-                                                      const char *field_name_0,
-                                                      const T0 &field_val_0) {
-  std::stringstream ss;
-  ss << "(kind " << field_name_0 << ": " << field_val_0 << ")";
-  return ss.str();
-}
+                                                      Args... args) {
+  static_assert(sizeof...(args) % 2 == 0, "Must be K/V pairs!");
 
-template <typename T0, typename T1>
-static inline std::string
-generate_description_string(const char *kind, const char *field_name_0,
-                            const T0 &field_val_0, const char *field_name_1,
-                            const T1 &field_val_1) {
   std::stringstream ss;
-  ss << "(kind " << field_name_0 << ": " << field_val_0 << " " << field_name_1
-     << ": " << field_val_1 << ")";
-  return ss.str();
-}
+  ss << "(" << kind;
 
-template <typename T0, typename T1, typename T2>
-static inline std::string
-generate_description_string(const char *kind, const char *field_name_0,
-                            const T0 &field_val_0, const char *field_name_1,
-                            const T1 &field_val_1, const char *field_name_2,
-                            const T2 &field_val_2) {
-  std::stringstream ss;
-  ss << "(kind " << field_name_0 << ": " << field_val_0 << " " << field_name_1
-     << ": " << field_val_1 << " " << field_name_2 << ": " << field_val_2
-     << ")";
-  return ss.str();
-}
+  internal::print_recursive(ss, args...);
 
-template <typename T0, typename T1, typename T2, typename T3>
-static inline std::string generate_description_string(
-    const char *kind, const char *field_name_0, const T0 &field_val_0,
-    const char *field_name_1, const T1 &field_val_1, const char *field_name_2,
-    const T2 &field_val_2, const char *field_name_3, const T3 &field_val_3) {
-  std::stringstream ss;
-  ss << "(kind " << field_name_0 << ": " << field_val_0 << " " << field_name_1
-     << ": " << field_val_1 << " " << field_name_2 << ": " << field_val_2 << " "
-     << field_name_3 << ": " << field_val_3 << ")";
+  ss << ")";
+
   return ss.str();
 }
 
@@ -130,8 +113,7 @@ inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out,
 template <>
 inline ActiveLogger &operator<<(ActiveLogger &out, const LogTag &t) {
   if (out.is_enabled())
-    out.stream() << "[" << t.tag() << "] "
-                 << " ";
+    out.stream() << "[" << t.tag() << "] ";
   return out;
 }
 

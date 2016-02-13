@@ -143,8 +143,8 @@ Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
     }
 
     if (Logger::kIsEnabled && success)
-      l << LogTag("scene") << "success with " << o->description() << " for "
-        << r << "\n";
+      l << indent << LogTag("scene") << "success with " << o->description()
+        << " for " << r << "\n";
   }
 
   return pixel;
