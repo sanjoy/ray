@@ -9,6 +9,16 @@
 #include <sstream>
 #include <iostream>
 
+#define ENABLE_LOGGING
+
+#ifdef ENABLE_LOGGING
+#define LOGGING_ONLY(x) x
+#define NO_LOGGING(x)
+#else
+#define LOGGING_ONLY(x)
+#define NO_LOGGING(x) x
+#endif
+
 namespace ray {
 
 /// Abort the program after displaying \p msg.
@@ -24,33 +34,8 @@ std::unique_ptr<T> make_unique(Args &&... args) {
 /// printf would've printed.
 #define printf_cr(fmt, ...) printf(fmt "\n", ##__VA_ARGS__)
 
-namespace internal {
-
-static inline void print_recursive(std::stringstream &ss) {}
-
-template <typename K, typename V, typename... Args>
-static inline void print_recursive(std::stringstream &ss, K key, V val,
-                                   Args... args) {
-  ss << " " << key << ": " << val;
-  print_recursive(ss, args...);
-}
-
-}
-
 template <typename... Args>
-static inline std::string generate_description_string(const char *kind,
-                                                      Args... args) {
-  static_assert(sizeof...(args) % 2 == 0, "Must be K/V pairs!");
-
-  std::stringstream ss;
-  ss << "(" << kind;
-
-  internal::print_recursive(ss, args...);
-
-  ss << ")";
-
-  return ss.str();
-}
+std::string generate_description_string(const char *kind, Args... args);
 
 enum class IndentActionTy { indent = 42 };
 constexpr IndentActionTy indent = IndentActionTy::indent;
@@ -148,19 +133,10 @@ public:
   ~GenericIndentScope() { _logger.decrease_indent(); }
 };
 
-#define ENABLE_LOGGING
-
-#ifdef ENABLE_LOGGING
-typedef ActiveLogger Logger;
-#define LOGGING_ONLY(x) x
-#define NO_LOGGING(x)
-#else
-typedef InactiveLogger Logger;
-#define LOGGING_ONLY(x)
-#define NO_LOGGING(x) x
-#endif
-
+typedef LOGGING_ONLY(ActiveLogger) NO_LOGGING(InactiveLogger) Logger;
 typedef GenericIndentScope<Logger> IndentScope;
 }
+
+#include "support-inline.hpp"
 
 #endif
