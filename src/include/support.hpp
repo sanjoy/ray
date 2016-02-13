@@ -49,10 +49,12 @@ public:
   static constexpr bool kIsEnabled = true;
 
   explicit ActiveLogger(bool enabled) : _enabled(enabled) {}
+
   std::stringstream &stream() {
     assert(_enabled);
     return _stream;
   }
+
   bool is_enabled() const { return _enabled; }
 
   void increase_indent() {
@@ -65,8 +67,7 @@ public:
   }
 
   void insert_indent() {
-    for (unsigned i = 0, e = _indent; i != e; ++i)
-      _stream << ' ';
+    std::fill_n(std::ostream_iterator<char>(_stream), _indent, ' ');
   }
 
   std::string get_log() { return _stream.str(); }
