@@ -12,7 +12,8 @@ using namespace ray;
 using namespace std;
 
 static void print_usage() {
-  printf_cr("usage: ./render [ --threads thread-count ] scene-name");
+  printf_cr("usage: ./render [ --threads thread-count ]" LOGGING_ONLY(
+      " [ --log logfile ]") " scene-name");
   printf_cr("  thread-count has to be a positive integer in [1, 1024)");
   printf_cr("scene names:");
   for_each_scene_generator([&](const char *sg_name, SceneGeneratorTy) {
@@ -21,20 +22,36 @@ static void print_usage() {
 }
 
 static void do_scene(std::function<Camera(Scene &s)> scene_gen,
-                     unsigned thread_count) {
+                     unsigned thread_count, std::string logfile) {
   Scene s;
   Camera c = scene_gen(s);
-  Bitmap bmp = c.snap(s, thread_count);
+  std::vector<std::string> logs;
+
+  Bitmap bmp = c.snap(s, thread_count, logfile.empty() ? nullptr : &logs);
   ofstream out("/tmp/out.bmp", std::ofstream::binary);
   bmp.write(out);
+
+  if (!logfile.empty()) {
+    printf_cr("Finished rendering, writing logs");
+    ofstream out(logfile);
+
+    unsigned idx = 0;
+    for (const auto &l : logs) {
+      out << "begin log " << idx << "\n";
+      out << l;
+      out << "end log " << idx << "\n\n";
+      idx++;
+    }
+  }
 
   printf_cr("Finished rendering, opening image");
   system("open /tmp/out.bmp");
 }
 
-static void do_scene(const char *scene_name, unsigned thread_count) {
+static void do_scene(const char *scene_name, unsigned thread_count,
+                     const std::string &logfile) {
   if (auto sg = get_scene_generator_by_name(scene_name)) {
-    do_scene(sg, thread_count);
+    do_scene(sg, thread_count, logfile);
     return;
   }
 
@@ -45,6 +62,7 @@ static void do_scene(const char *scene_name, unsigned thread_count) {
 struct Arguments {
   std::string scene_name;
   std::string exec_name;
+  std::string logfile;
   unsigned thread_count = 12;
 };
 
@@ -74,6 +92,15 @@ static bool parse_args(Arguments &args, int argc, char **argv) {
             val >= 1024)
           return false;
         args.thread_count = val;
+      } else if (NO_LOGGING(false && ) !strcmp(current, "--log")) {
+        if (argc == 0)
+          return false;
+
+        char *logfile = argv[0];
+        argc--;
+        argv++;
+
+        args.logfile = logfile;
       } else {
         return false;
       }
@@ -95,6 +122,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  do_scene(args.scene_name.c_str(), args.thread_count);
+  do_scene(args.scene_name.c_str(), args.thread_count, args.logfile);
   return 0;
 }

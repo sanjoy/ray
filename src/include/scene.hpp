@@ -59,7 +59,8 @@ public:
                   unsigned screen_height_px, unsigned screen_resolution,
                   const Vector &pos);
 
-  Bitmap snap(Scene &s, unsigned thread_count = 12);
+  Bitmap snap(Scene &s, unsigned thread_count = 12,
+              std::vector<std::string> *logs = nullptr);
 };
 }
 

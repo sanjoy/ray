@@ -65,7 +65,8 @@ Camera::Camera(Ruler::Real focal_length, unsigned screen_width_px,
       _screen_height_px(screen_height_px),
       _screen_resolution(screen_resolution), _focus_position(pos) {}
 
-Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
+Bitmap Camera::snap(Scene &scene, unsigned thread_count,
+                    std::vector<std::string> *logs) {
   Bitmap bmp(_screen_height_px, _screen_width_px, Color::create_blue());
 
   Ruler::Real max_diag_square =
@@ -96,7 +97,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
         i == (thread_count - 1) ? (_screen_width_px / 2) : (x_begin + x_delta);
     ThreadTask<RenderFnTy>::Point p0(x_begin, -(_screen_height_px / 2));
     ThreadTask<RenderFnTy>::Point p1(x_end, (_screen_height_px / 2));
-    subtasks.emplace_back(p0, p1, render_one_pixel, scene, true);
+    subtasks.emplace_back(p0, p1, render_one_pixel, scene, logs != nullptr);
     x_begin = x_end;
   }
 
@@ -115,8 +116,9 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
         });
   }
 
-  for (auto &task : subtasks)
-    std::cout << "log: " << task.context().logger().get_log().size() << "\n";
+  if (logs)
+    for (auto &task : subtasks)
+      logs->emplace_back(std::move(task.context().logger().get_log()));
 
   return bmp;
 }
@@ -129,8 +131,6 @@ Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
   for (auto &o : _objects) {
     double k;
     Color c;
-    if (Logger::kIsEnabled)
-      l << LogTag("scene") << "checking with " << o->description() << "\n";
     bool success;
     {
       IndentScope i_scope(l);
@@ -142,7 +142,9 @@ Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
       }
     }
 
-    l << LogTag("scene") << (success ? "hit" : "no hit") << "\n";
+    if (Logger::kIsEnabled && success)
+      l << LogTag("scene") << "success with " << o->description() << " for "
+        << r << "\n";
   }
 
   return pixel;
