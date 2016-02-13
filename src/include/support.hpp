@@ -82,8 +82,13 @@ class ActiveLogger {
   unsigned _indent = 0;
 
 public:
+  static constexpr bool kIsEnabled = true;
+
   explicit ActiveLogger(bool enabled) : _enabled(enabled) {}
-  std::stringstream &stream() { return _stream; }
+  std::stringstream &stream() {
+    assert(_enabled);
+    return _stream;
+  }
   bool is_enabled() const { return _enabled; }
 
   void increase_indent() {
@@ -103,6 +108,14 @@ public:
   std::string get_log() { return _stream.str(); }
 };
 
+class LogTag {
+  const char *_tag;
+
+public:
+  LogTag(const char *s) : _tag(s) {}
+  const char *tag() const { return _tag; };
+};
+
 template <typename T>
 inline ActiveLogger &operator<<(ActiveLogger &out, const T &t) {
   if (out.is_enabled())
@@ -118,7 +131,17 @@ inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out,
   return out;
 }
 
+template <>
+inline ActiveLogger &operator<<(ActiveLogger &out, const LogTag &t) {
+  if (out.is_enabled())
+    out.stream() << "[" << t.tag() << "] "
+                 << " ";
+  return out;
+}
+
 struct InactiveLogger {
+  static constexpr bool kIsEnabled = true;
+
   explicit InactiveLogger(bool enabled) {}
 
   void increase_indent() {}

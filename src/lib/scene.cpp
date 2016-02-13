@@ -129,7 +129,8 @@ Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
   for (auto &o : _objects) {
     double k;
     Color c;
-    l << "Checking with " << o->description() << "\n";
+    if (Logger::kIsEnabled)
+      l << LogTag("scene") << "checking with " << o->description() << "\n";
     bool success;
     {
       IndentScope i_scope(l);
@@ -141,7 +142,7 @@ Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
       }
     }
 
-    l << (success ? "hit" : "no hit") << "\n";
+    l << LogTag("scene") << (success ? "hit" : "no hit") << "\n";
   }
 
   return pixel;

@@ -29,7 +29,6 @@ bool BoxObj::incident(ThreadContext &ctx, const Ray &incoming,
                       Color &out_c) const {
   unsigned idx;
   if (_cube.intersect(incoming, out_k, idx)) {
-    ctx.logger() << indent << " hit\n";
     out_c = _colors[idx];
     return true;
   }
