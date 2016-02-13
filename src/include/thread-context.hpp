@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "support.hpp"
+
 namespace ray {
 
 /// Objects have per render-thread state.  This provides thread local
@@ -12,12 +14,16 @@ namespace ray {
 class ThreadContext {
   std::unique_ptr<intptr_t[]> _obj_data;
   unsigned _obj_count;
+  Logger _logger;
 
 public:
-  explicit ThreadContext(unsigned obj_count)
-      : _obj_data(new intptr_t[obj_count]), _obj_count(obj_count) {
+  explicit ThreadContext(unsigned obj_count, bool enable_logger)
+      : _obj_data(new intptr_t[obj_count]), _obj_count(obj_count),
+        _logger(enable_logger) {
     (void)_obj_count;
   }
+
+  Logger &logger() { return _logger; }
 
   /// Retrieve the thread local storage for the object with object id \p obj_id.
   intptr_t &get(unsigned obj_id) {

@@ -359,7 +359,7 @@ public:
     _orth_1_begin = pts[1] * _orth_1;
     _orth_1_end = pts[2] * _orth_1;
 
-    assert(Ruler::is_zero(orth_0 * _orth_1) && "Expected orthogonal vectors!");
+    assert(Ruler::is_zero(_orth_0 * _orth_1) && "Expected orthogonal vectors!");
   }
 
   const Plane &container() const { return _container; }

@@ -2,6 +2,7 @@
 
 #include "newton.hpp"
 #include "scene.hpp"
+#include "support.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -23,11 +24,12 @@ BoxObj::BoxObj(const Scene &s, const Vector &center, const Vector &normal_a,
   _colors[5] = Color(71, 0, 71);
 }
 
-bool BoxObj::incident(ThreadContext &, Logger &l, const Ray &incoming,
+bool BoxObj::incident(ThreadContext &ctx, const Ray &incoming,
                       double current_best_k, double &out_k,
                       Color &out_c) const {
   unsigned idx;
   if (_cube.intersect(incoming, out_k, idx)) {
+    ctx.logger() << indent << " hit\n";
     out_c = _colors[idx];
     return true;
   }
@@ -35,7 +37,7 @@ bool BoxObj::incident(ThreadContext &, Logger &l, const Ray &incoming,
   return false;
 }
 
-bool SkyObj::incident(ThreadContext &, Logger &l, const Ray &incoming,
+bool SkyObj::incident(ThreadContext &, const Ray &incoming,
                       double current_best_k, double &out_k,
                       Color &out_c) const {
   if (current_best_k < std::numeric_limits<double>::max())
@@ -53,7 +55,7 @@ bool SkyObj::incident(ThreadContext &, Logger &l, const Ray &incoming,
   return true;
 }
 
-bool InfinitePlane::incident(ThreadContext &, Logger &l, const Ray &incoming,
+bool InfinitePlane::incident(ThreadContext &, const Ray &incoming,
                              double current_best_k, double &out_k,
                              Color &out_c) const {
   if (!_plane.intersect(incoming, out_k) || out_k > current_best_k)
@@ -70,9 +72,9 @@ bool InfinitePlane::incident(ThreadContext &, Logger &l, const Ray &incoming,
   return true;
 }
 
-bool SphericalMirrorObj::incident(ThreadContext &ctx, Logger &l,
-                                  const Ray &incoming, double current_best_k,
-                                  double &out_k, Color &out_c) const {
+bool SphericalMirrorObj::incident(ThreadContext &ctx, const Ray &incoming,
+                                  double current_best_k, double &out_k,
+                                  Color &out_c) const {
   intptr_t &nesting = ctx.get(object_id());
   if (nesting >= SphericalMirrorObj::max_nesting())
     return false;
@@ -83,7 +85,7 @@ bool SphericalMirrorObj::incident(ThreadContext &ctx, Logger &l,
     auto new_ray = get_reflected_ray(incoming, touch_pt, normal);
 
     nesting++;
-    out_c = container().render_pixel(new_ray, ctx, l) * 0.8;
+    out_c = container().render_pixel(new_ray, ctx) * 0.8;
     nesting--;
     return true;
   }
@@ -99,9 +101,9 @@ RefractiveBoxObj::RefractiveBoxObj(const Scene &s, const Vector &center,
                     "normal-b", normal_b, "side", side)),
       _cube(center, normal_a, normal_b, side) {}
 
-bool RefractiveBoxObj::incident(ThreadContext &ctx, Logger &l,
-                                const Ray &incoming, double current_best_k,
-                                double &out_k, Color &out_c) const {
+bool RefractiveBoxObj::incident(ThreadContext &ctx, const Ray &incoming,
+                                double current_best_k, double &out_k,
+                                Color &out_c) const {
   intptr_t &nesting = ctx.get(object_id());
   if (nesting >= RefractiveBoxObj::max_nesting())
     return false;
@@ -133,7 +135,7 @@ bool RefractiveBoxObj::incident(ThreadContext &ctx, Logger &l,
     return false;
 
   nesting++;
-  out_c = container().render_pixel(r_i, ctx, l) * 0.9;
+  out_c = container().render_pixel(r_i, ctx) * 0.9;
   nesting--;
   return true;
 }

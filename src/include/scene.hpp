@@ -29,7 +29,7 @@ public:
   /// Render a single pixel, with the thread context passed in as \p ctx.
   ///
   /// Return the color of the rendered pixel.
-  Color render_pixel(const Ray &r, ThreadContext &ctx, Logger &l) const;
+  Color render_pixel(const Ray &r, ThreadContext &ctx) const;
 
   /// Initialize the object_id fields of the contained objects, related state in
   /// \p ctx.

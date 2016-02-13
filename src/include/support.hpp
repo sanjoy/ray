@@ -7,6 +7,7 @@
 #include <utility>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 namespace ray {
 
@@ -73,9 +74,9 @@ static inline std::string generate_description_string(
 }
 
 enum class IndentActionTy { indent = 42 };
+constexpr IndentActionTy indent = IndentActionTy::indent;
 
 class ActiveLogger {
-  std::string _log;
   std::stringstream _stream;
   bool _enabled;
   unsigned _indent = 0;
@@ -98,6 +99,8 @@ public:
     for (unsigned i = 0, e = _indent; i != e; ++i)
       _stream << ' ';
   }
+
+  std::string get_log() { return _stream.str(); }
 };
 
 template <typename T>
@@ -117,6 +120,15 @@ inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out,
 
 struct InactiveLogger {
   explicit InactiveLogger(bool enabled) {}
+
+  void increase_indent() {}
+  void decrease_indent() {}
+  void insert_indent() {}
+
+  std::string &get_log() { return _always_empty; }
+
+private:
+  std::string _always_empty;
 };
 
 template <typename T>

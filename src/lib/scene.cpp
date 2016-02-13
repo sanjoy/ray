@@ -19,9 +19,9 @@ public:
   };
 
   explicit ThreadTask(Point top_left, Point bottom_right, RenderFnTy &render_fn,
-                      Scene &s)
+                      Scene &s, bool enable_logging)
       : _top_left(top_left), _bottom_right(bottom_right), _render_fn(render_fn),
-        _ctx(s.object_count()) {
+        _ctx(s.object_count(), enable_logging) {
     _result.reset(new Color[(bottom_right.x() - top_left.x()) *
                             (bottom_right.y() - top_left.y())]);
     s.init_object_ids(_ctx);
@@ -34,7 +34,7 @@ public:
         at(xi, yi) = render_fn(xi, yi, _ctx);
   }
 
-  ThreadContext context() { return _ctx; }
+  ThreadContext &context() { return _ctx; }
 
   template <typename DrainFnTy> void drain_work(const DrainFnTy &drain_fn) {
     for (int xi = _top_left.x(), xe = _bottom_right.x(); xi != xe; ++xi)
@@ -75,14 +75,12 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
   unsigned resolution = _screen_resolution;
   auto focus = _focus_position;
 
-  Logger logger(false);
-
   auto render_one_pixel = [&](int x, int y, ThreadContext &ctx) {
     auto scale = Ruler::one() + (x * x + y * y) / max_diag_square;
     const Vector sample_pt(focal_length, (x * scale) / resolution,
                            (y * scale) / resolution);
     return scene.render_pixel(Ray::from_two_points(focus, focus + sample_pt),
-                              ctx, logger);
+                              ctx);
   };
 
   typedef decltype(render_one_pixel) RenderFnTy;
@@ -98,7 +96,7 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
         i == (thread_count - 1) ? (_screen_width_px / 2) : (x_begin + x_delta);
     ThreadTask<RenderFnTy>::Point p0(x_begin, -(_screen_height_px / 2));
     ThreadTask<RenderFnTy>::Point p1(x_end, (_screen_height_px / 2));
-    subtasks.emplace_back(p0, p1, render_one_pixel, scene);
+    subtasks.emplace_back(p0, p1, render_one_pixel, scene, true);
     x_begin = x_end;
   }
 
@@ -117,21 +115,33 @@ Bitmap Camera::snap(Scene &scene, unsigned thread_count) {
         });
   }
 
+  for (auto &task : subtasks)
+    std::cout << "log: " << task.context().logger().get_log().size() << "\n";
+
   return bmp;
 }
 
-Color Scene::render_pixel(const Ray &r, ThreadContext &ctx, Logger &l) const {
+Color Scene::render_pixel(const Ray &r, ThreadContext &ctx) const {
   double smallest_k = std::numeric_limits<double>::infinity();
   Color pixel;
+  Logger &l = ctx.logger();
 
   for (auto &o : _objects) {
     double k;
     Color c;
-    if (o->incident(ctx, l, r, smallest_k, k, c) && k < smallest_k &&
-        k >= 0.0) {
-      smallest_k = k;
-      pixel = c;
+    l << "Checking with " << o->description() << "\n";
+    bool success;
+    {
+      IndentScope i_scope(l);
+      success =
+          o->incident(ctx, r, smallest_k, k, c) && k < smallest_k && k >= 0.0;
+      if (success) {
+        smallest_k = k;
+        pixel = c;
+      }
     }
+
+    l << (success ? "hit" : "no hit") << "\n";
   }
 
   return pixel;
