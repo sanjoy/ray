@@ -103,8 +103,7 @@ inline ActiveLogger &operator<<(ActiveLogger &out, const T &t) {
 }
 
 template <>
-inline ActiveLogger &operator<<<IndentActionTy>(ActiveLogger &out,
-                                                const IndentActionTy &t) {
+inline ActiveLogger &operator<<(ActiveLogger &out, const IndentActionTy &t) {
   if (out.is_enabled())
     out.insert_indent();
   return out;
