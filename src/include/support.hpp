@@ -9,8 +9,9 @@
 #include <sstream>
 #include <iostream>
 
-#define ENABLE_LOGGING  // FIXME: eventually this needs to be decided at
-                        // configure time.
+#ifndef NDEBUG
+#define ENABLE_LOGGING
+#endif
 
 #ifdef ENABLE_LOGGING
 #define LOGGING_ONLY(x) x
