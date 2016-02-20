@@ -27,24 +27,23 @@ inline Ray get_refracted_ray(const Ray &r, const Vector &pt, Vector normal,
                              double relative_refractive_index,
                              bool &out_total_internal_reflection) {
   Vector incoming_dir = r.direction().normalize();
-  double cos_of_incoming = incoming_dir * normal;
-  double sin_of_incoming_sq = 1.0 - std::pow(cos_of_incoming, 2);
-  double sin_of_outgoing_sq =
-      std::pow(relative_refractive_index, 2) * sin_of_incoming_sq;
+  double inv_ref_index = 1.0 / relative_refractive_index;
 
-  if (sin_of_outgoing_sq <= 1.0) {
+  // Snell's law in vector form:
+  //
+  // s2 = (n1 / n2) (N x (-N x s1)) - N * sqrt(1 - D)
+  //  D = ((n1 / n2)^2) ((N x s1) . (N x s1))
+  // ref_index = n2 / n1
+
+  Vector n_cross_s1 = normal.cross_product(incoming_dir);
+  double D = std::pow(inv_ref_index, 2) * (n_cross_s1 * n_cross_s1);
+
+  if (D <= 1.0) {
     out_total_internal_reflection = false;
-    double tan_of_outgoing_sq = sin_of_outgoing_sq / (1 - sin_of_outgoing_sq);
-    double tan_of_outgoing = std::sqrt(tan_of_outgoing_sq);
-    Vector orth_with_mag = incoming_dir + normal;
-    if (orth_with_mag.is_zero())
-      return Ray::from_offset_and_direction(pt + normal * Ruler::epsilon(),
-                                            -normal);
 
-    Vector orth = (incoming_dir + normal).normalize();
-    Vector new_dir = orth * (-1.0 * tan_of_outgoing) - normal;
-    return Ray::from_offset_and_direction(pt + normal * Ruler::epsilon(),
-                                          new_dir);
+    Vector s2 = inv_ref_index * normal.cross_product(-n_cross_s1) -
+                (normal * std::sqrt(1 - D));
+    return Ray::from_offset_and_direction(pt + normal * Ruler::epsilon(), s2);
   }
 
   out_total_internal_reflection = true;

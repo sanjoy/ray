@@ -442,6 +442,7 @@ class Cube {
     Vector n_a = normal_a.normalize();
     Vector n_b = normal_b.normalize();
     Vector n_c = n_a.cross_product(n_b);
+
     Vector ns[3] = {n_a, n_b, n_c};
 
     auto compute_face = [&](unsigned face_idx, int sign) {
@@ -461,7 +462,9 @@ class Cube {
       if (sign == -1)
         std::reverse(pts.begin(), pts.end());
 
-      return RectanglePlaneSegment(pts);
+      RectanglePlaneSegment rps(pts);
+      assert(rps.normal() == sign * ns[face_idx] && "Bad normal!");
+      return rps;
     };
 
     return {{compute_face(0, -1), compute_face(0, 1), compute_face(1, -1),
