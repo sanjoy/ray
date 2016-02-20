@@ -82,7 +82,7 @@ static Camera generate_refraction_scene_0(Scene &s) {
   Vector init_normal_a = Vector::get_i();
   Vector init_normal_b = Vector::get_j();
   s.add_object(make_unique<RefractiveBoxObj>(s, refractive_pos_a, init_normal_a,
-                                             init_normal_b, 1000.0));
+                                             init_normal_b, 1000.0, 1.0));
 
   return Camera(6.0, 5000, 2500, 20, ray::Vector::get_origin());
 }
@@ -130,7 +130,7 @@ static Camera generate_refraction_scene_1(Scene &s) {
   Vector init_normal_a = Vector::get_i();
   Vector init_normal_b = Vector::get_j();
   s.add_object(make_unique<RefractiveBoxObj>(s, refractive_pos_a, init_normal_a,
-                                             init_normal_b, 800.0));
+                                             init_normal_b, 800.0, 1.0));
 
   return Camera(6.0, 5000, 2500, 20, ray::Vector::get_origin());
 }

@@ -94,11 +94,13 @@ bool SphericalMirrorObj::incident(ThreadContext &ctx, const Ray &incoming,
 
 RefractiveBoxObj::RefractiveBoxObj(const Scene &s, const Vector &center,
                                    const Vector &normal_a,
-                                   const Vector &normal_b, double side)
+                                   const Vector &normal_b, double side,
+                                   double ref_index)
     : Object(s, generate_description_string(
                     "RefractiveBoxObj", "center", center, "normal-a", normal_a,
                     "normal-b", normal_b, "side", side)),
-      _cube(center, normal_a, normal_b, side) {}
+      _cube(center, normal_a, normal_b, side),
+      _relative_refractive_index(ref_index) {}
 
 bool RefractiveBoxObj::incident(ThreadContext &ctx, const Ray &incoming,
                                 double current_best_k, double &out_k,
