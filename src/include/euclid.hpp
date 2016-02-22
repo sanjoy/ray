@@ -117,9 +117,13 @@ public:
     return Vector(-i(), -j(), -k());
   }
 
-  Ruler::Real operator*(const Vector &other) const {
+  Ruler::Real dot_product(const Vector &other) const {
     assert(is_valid() && other.is_valid() && "Invalid vector!");
     return i() * other.i() + j() * other.j() + k() * other.k();
+  }
+
+  Ruler::Real operator*(const Vector &other) const {
+    return this->dot_product(other);
   }
 
   Vector operator*(Ruler::Real v) const {

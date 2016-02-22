@@ -24,7 +24,7 @@
 namespace ray {
 
 /// Abort the program after displaying \p msg.
-void unreachable(const char *msg);
+void unreachable(const char *msg) __attribute__((noreturn));
 
 /// Port of std::make_unique from C++14
 template <typename T, typename... Args>
