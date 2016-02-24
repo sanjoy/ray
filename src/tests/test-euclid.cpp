@@ -110,8 +110,26 @@ static void test_ray_intersection() {
   }
 }
 
+static void test_plane_intersection() {
+  RAY_INIT_TEST("Plane intersections");
+  // Basic ray-plane intersections
+
+  auto CheckIntersection = [&](const Plane &p, const Vector &from,
+                               const Vector &to) {
+    Ruler::Real k;
+    Ray r = Ray::from_two_points(Vector::get_origin(), to);
+    CHECK0(p.intersect(r, k));
+    CHECK0(p.contains(r.at(k)));
+  };
+
+  CheckIntersection(Plane::get_xy(), Vector::get_origin(), Vector::get_k());
+  CheckIntersection(Plane::get_xy(), Vector::get_origin() + Vector::get_i(),
+                    Vector::get_k() + Vector::get_j());
+}
+
 int main(int argc, char **argv) {
   test_vector_properties();
   test_ray_intersection();
+  test_plane_intersection();
   return 0;
 }

@@ -302,8 +302,18 @@ public:
     _point = pts[0];
   }
 
+  static Plane get_xy() { return Plane(Vector::get_k(), Vector::get_origin()); }
+
+  static Plane get_yz() { return Plane(Vector::get_i(), Vector::get_origin()); }
+
+  static Plane get_zx() { return Plane(Vector::get_j(), Vector::get_origin()); }
+
   const Vector &normal() const { return _normal; }
   const Vector &point() const { return _point; }
+
+  Plane translate(const Vector &disp) {
+    return Plane(normal(), point() + disp);
+  }
 
   /// Returns true if \p r intersects the plane at exactly one point, and
   /// returns the offset at which \p r intersects this plane at \p out.
