@@ -64,7 +64,7 @@ static void test_vector_properties() {
       Vector v = create_vect(i);
       Vector r = create_vect(j);
       if (Ruler::is_zero(v * r))
-        CHECK0(v.cross_product(v.rotate(M_PI, r)).is_zero());
+        CHECK0(v.cross_product(v.rotate(M_PI, r)).is_zero()) << r << "\n";
     }
   }
 
@@ -125,6 +125,33 @@ static void test_plane_intersection() {
   CheckIntersection(Plane::get_xy(), Vector::get_origin(), Vector::get_k());
   CheckIntersection(Plane::get_xy(), Vector::get_origin() + Vector::get_i(),
                     Vector::get_k() + Vector::get_j());
+
+  auto ChangeDir = [&](const Vector &v) {
+    if (v == Vector::get_j())
+      return (v - Vector::get_i()).normalize();
+    return (v - Vector::get_j()).normalize();
+  };
+
+  for (unsigned i = 0; i < kCreateVectMax; i++) {
+    for (unsigned j = 0; j < kCreateVectMax; j++) {
+      Plane p(create_vect(i).normalize(), create_vect(j));
+      Vector parallel_dir =
+          p.normal().cross_product(ChangeDir(p.normal())).normalize();
+      Vector non_parallel_dir = ChangeDir(p.normal());
+
+      Vector init_point = create_vect((i + j) % kCreateVectMax);
+      Ray parallel_ray =
+          Ray::from_offset_and_direction(init_point, parallel_dir);
+      Ray non_parallel_ray =
+          Ray::from_offset_and_direction(init_point, non_parallel_dir);
+
+      Ruler::Real k;
+      CHECK0(p.intersect(non_parallel_ray, k)) << p << " " << non_parallel_ray
+                                               << " " << k << "\n";
+      CHECK0(p.contains(non_parallel_ray.at(k)));
+      CHECK0(!p.intersect(parallel_ray, k));
+    }
+  }
 }
 
 int main(int argc, char **argv) {

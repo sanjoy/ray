@@ -6,4 +6,5 @@ add_library(ray
   scene.cpp
   scene-generators.cpp
   support.cpp
+  test.cpp
   )

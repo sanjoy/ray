@@ -36,31 +36,35 @@ public:
   }
 };
 
+class MaybeStdErr {
+  bool _enabled;
+
+public:
+  explicit MaybeStdErr(bool enabled) : _enabled(enabled) {}
+  bool enabled() const { return _enabled; }
+};
+
+template <typename T>
+const MaybeStdErr &operator<<(const MaybeStdErr &out, const T &val) {
+  if (out.enabled())
+    std::cerr << val;
+  return out;
+};
+
+namespace internal {
+MaybeStdErr check_helper(bool pred, const char *pred_str, const char *msg,
+                         const char *file_name, unsigned line_num,
+                         TestDecl &test_decl);
+}
 }
 
-#define CHECK(pred, msg)                                                 \
-  do {                                                                   \
-    if (!(pred)) {                                                       \
-      std::cerr << #pred << " failed in " << __FILE__ << ":" << __LINE__ \
-                << std::endl;                                            \
-      std::cerr << msg << std::endl;                                     \
-      __current_test_decl.mark_as_failed();                              \
-    } else {                                                             \
-      __current_test_decl.mark_as_passed();                              \
-    }                                                                    \
-  } while (false)
+#define CHECK(pred, msg)                                                       \
+  ray::internal::check_helper(pred, #pred, msg, __FILE__, __LINE__,            \
+                              __current_test_decl)
 
-#define CHECK0(pred)                                                     \
-  do {                                                                   \
-    if (!(pred)) {                                                       \
-      std::cerr << #pred << " failed in " << __FILE__ << ":" << __LINE__ \
-                << std::endl;                                            \
-      __current_test_decl.mark_as_failed();                              \
-    } else {                                                             \
-      __current_test_decl.mark_as_passed();                              \
-    }                                                                    \
-  } while (false)
-
+#define CHECK0(pred)                                                           \
+  ray::internal::check_helper(pred, #pred, "", __FILE__, __LINE__,             \
+                              __current_test_decl)
 
 #define RAY_INIT_TEST(name) TestDecl __current_test_decl(name);
 
