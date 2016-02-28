@@ -137,7 +137,10 @@ static void test_plane_intersection() {
       Plane p(create_vect(i).normalize(), create_vect(j));
       Vector parallel_dir =
           p.normal().cross_product(ChangeDir(p.normal())).normalize();
-      Vector non_parallel_dir = ChangeDir(p.normal());
+      Vector non_parallel_dir = (parallel_dir + p.normal()).normalize();
+
+      assert(Ruler::is_zero(parallel_dir * p.normal()));
+      assert(!Ruler::is_zero(non_parallel_dir * p.normal()));
 
       Vector init_point = create_vect((i + j) % kCreateVectMax);
       Ray parallel_ray =
@@ -147,7 +150,7 @@ static void test_plane_intersection() {
 
       Ruler::Real k;
       CHECK0(p.intersect(non_parallel_ray, k)) << p << " " << non_parallel_ray
-                                               << " " << k << "\n";
+                                               << "\n";
       CHECK0(p.contains(non_parallel_ray.at(k)));
       CHECK0(!p.intersect(parallel_ray, k));
     }

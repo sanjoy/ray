@@ -25,9 +25,7 @@ struct Ruler {
   typedef double Real;
 
   /// Return true if \p d is zero.
-  static bool is_zero(Real d) {
-    return fabs(d) < std::numeric_limits<double>::round_error();
-  }
+  static bool is_zero(Real d) { return fabs(d) < Ruler::epsilon(); }
 
   /// Return true if \p d is negative.
   static bool is_negative(Real d) { return d < 0.0; }
@@ -36,7 +34,7 @@ struct Ruler {
   static bool is_equal(Real d0, Real d1) { return is_zero(d0 - d1); }
 
   /// The smallest meaningful distance.
-  static Real epsilon() { return 1E-55; }
+  static Real epsilon() { return 1E-10; }
 
   /// Positive infinity.
   static Real infinity() { return std::numeric_limits<Real>::infinity(); }
