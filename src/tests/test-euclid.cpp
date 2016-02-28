@@ -110,6 +110,12 @@ static void test_ray_intersection() {
   }
 }
 
+static Vector ChangeDir(const Vector &v) {
+  if (v == Vector::get_j())
+    return (v - Vector::get_i()).normalize();
+  return (v - Vector::get_j()).normalize();
+};
+
 static void test_plane_intersection() {
   RAY_INIT_TEST("Plane intersections");
   // Basic ray-plane intersections
@@ -125,12 +131,6 @@ static void test_plane_intersection() {
   CheckIntersection(Plane::get_xy(), Vector::get_origin(), Vector::get_k());
   CheckIntersection(Plane::get_xy(), Vector::get_origin() + Vector::get_i(),
                     Vector::get_k() + Vector::get_j());
-
-  auto ChangeDir = [&](const Vector &v) {
-    if (v == Vector::get_j())
-      return (v - Vector::get_i()).normalize();
-    return (v - Vector::get_j()).normalize();
-  };
 
   for (unsigned i = 0; i < kCreateVectMax; i++) {
     for (unsigned j = 0; j < kCreateVectMax; j++) {
@@ -157,9 +157,44 @@ static void test_plane_intersection() {
   }
 }
 
+static void test_rps_intersection() {
+  RAY_INIT_TEST("RectanglePlaneSegment intersections");
+
+  for (unsigned i = 0; i < kCreateVectMax; i++) {
+    for (unsigned j = 0; j < kCreateVectMax; j++) {
+      if (i == j)
+        continue;
+      //
+      //   pt0 <--- pt1
+      //             |
+      //             |
+      //             V
+      //            pt2
+      Vector pt0 = create_vect(i);
+      Vector pt1 = create_vect(j);
+      Vector dir = pt0 - pt1;
+      Vector dir_perp = dir.cross_product(ChangeDir(dir)).normalize();
+      Vector pt2 = pt1 + dir_perp;
+
+      RectanglePlaneSegment rps({{pt0, pt1, pt2}});
+
+      auto real_values = {0.001, 0.1, 0.3, 0.5, 0.7733, 0.8, 0.9999};
+      for (Ruler::Real x : real_values)
+        for (Ruler::Real y : real_values) {
+          Ray r = Ray::from_two_points(Vector::get_origin(),
+                                       pt1 + x * dir + y * dir_perp);
+          Ruler::Real k;
+          CHECK0(rps.intersect(r, k)) << r << " " << rps << "\n";
+          CHECK0(rps.container().contains(r.at(k)));
+        }
+    }
+  }
+}
+
 int main(int argc, char **argv) {
   test_vector_properties();
   test_ray_intersection();
   test_plane_intersection();
+  test_rps_intersection();
   return 0;
 }

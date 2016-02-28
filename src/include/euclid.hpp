@@ -393,7 +393,19 @@ public:
     return (orth_1_component <= _orth_1_end &&
             orth_1_component >= _orth_1_begin);
   }
+
+  void print(std::ostream &out) const {
+    out << container() << ": " << _orth_0 << " [" << _orth_0_begin << ", "
+        << _orth_0_end << ") " << _orth_1 << "[" << _orth_1_begin << ", "
+        << _orth_1_end << ")";
+  }
 };
+
+inline std::ostream &operator<<(std::ostream &out,
+                                const RectanglePlaneSegment &rps) {
+  rps.print(out);
+  return out;
+}
 
 /// Represents a sphere in 3D space.
 ///
