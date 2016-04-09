@@ -1,4 +1,16 @@
-include_directories(../include)
+include_directories(
+  ../include
+  googletest/include
+  googletest
+  )
 
-add_executable(test-euclid test-euclid.cpp)
-target_link_libraries(test-euclid ray)
+add_library(gtest
+  googletest/src/gtest-all.cc
+)
+
+add_executable(run-tests
+  test-euclid.cpp
+  run-tests-main.cpp
+  )
+
+target_link_libraries(run-tests ray gtest)

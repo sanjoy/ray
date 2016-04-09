@@ -1,0 +1,2 @@
+This is a code drop of the gtest framework used within LLVM, with the
+raw_ostream customizations removed.

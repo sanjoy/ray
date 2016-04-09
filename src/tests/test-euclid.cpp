@@ -191,10 +191,9 @@ static void test_rps_intersection() {
   }
 }
 
-int main(int argc, char **argv) {
+void foo() {
   test_vector_properties();
   test_ray_intersection();
   test_plane_intersection();
   test_rps_intersection();
-  return 0;
 }

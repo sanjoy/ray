@@ -1,4 +1,5 @@
 include_directories(../include)
+add_definitions(-fno-rtti)
 
 add_library(ray
   bitmap.cpp
